@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio | 김희정</title>
+  <style>
+    :root{
+      --bg: #0b0d10;
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.04);
+      --text: #e9ecf1;
+      --muted: rgba(233,236,241,0.72);
+      --gold: #d6b46a;
+      --gold-2: #f3d37b;
+      --line: rgba(214,180,106,0.28);
+      --shadow: 0 18px 50px rgba(0,0,0,0.45);
+      --radius: 18px;
+      --radius-2: 24px;
+      --max: 1080px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(214,180,106,0.10), transparent 55%),
+        radial-gradient(1000px 700px at 90% 25%, rgba(214,180,106,0.07), transparent 55%),
+        radial-gradient(900px 650px at 50% 90%, rgba(255,255,255,0.05), transparent 60%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .wrap{ width:min(var(--max), calc(100% - 40px)); margin:0 auto; }
+
+    /* Top Nav */
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      background: rgba(11,13,16,0.55);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      letter-spacing: .2px;
+    }
+    .mark{
+      width:34px; height:34px; border-radius:12px;
+      background:
+        radial-gradient(14px 14px at 30% 30%, rgba(243,211,123,0.95), rgba(214,180,106,0.12)),
+        linear-gradient(135deg, rgba(214,180,106,0.35), rgba(255,255,255,0.06));
+      border:1px solid rgba(214,180,106,0.35);
+      box-shadow: 0 10px 30px rgba(214,180,106,0.12);
+    }
+    .brand .name{
+      font-weight: 700;
+      font-size: 14px;
+      color: rgba(233,236,241,0.92);
+    }
+    .brand .tag{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .navlinks{
+      display:flex; gap:14px; align-items:center;
+      color: rgba(233,236,241,0.82);
+      font-size: 13px;
+    }
+    .navlinks a{
+      padding:8px 10px;
+      border-radius: 12px;
+      transition: transform .25s var(--ease), background .25s var(--ease), color .25s var(--ease);
+    }
+    .navlinks a:hover{
+      background: rgba(214,180,106,0.10);
+      color: rgba(243,211,123,0.95);
+      transform: translateY(-1px);
+    }
+
+    /* Hero */
+    main{ padding: 44px 0 80px; }
+    .hero{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 18px;
+    }
+    @media (max-width: 900px){
+      .hero{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position: relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(500px 220px at 20% 0%, rgba(214,180,106,0.22), transparent 60%);
+      pointer-events:none;
+      opacity: .8;
+    }
+    .hero-left{ padding: 26px; }
+    .kicker{
+      display:inline-flex; gap:10px; align-items:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(214,180,106,0.10);
+      border: 1px solid rgba(214,180,106,0.22);
+      color: rgba(243,211,123,0.92);
+      font-size: 12px;
+      letter-spacing: .2px;
+    }
+    .title{
+      margin: 14px 0 8px;
+      font-size: clamp(26px, 4vw, 40px);
+      line-height: 1.12;
+      letter-spacing: -0.6px;
+      font-weight: 820;
+    }
+    .title .gold{
+      background: linear-gradient(90deg, var(--gold-2), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .desc{
+      margin: 10px 0 18px;
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.7;
+      max-width: 62ch;
+    }
+
+    .cta-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top: 18px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: rgba(233,236,241,0.92);
+      transition: transform .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(214,180,106,0.35);
+      background: rgba(214,180,106,0.10);
+    }
+    .btn.primary{
+      border-color: rgba(214,180,106,0.45);
+      background: linear-gradient(135deg, rgba(214,180,106,0.25), rgba(255,255,255,0.03));
+      box-shadow: 0 16px 40px rgba(214,180,106,0.14);
+    }
+    .btn.primary:hover{
+      background: linear-gradient(135deg, rgba(214,180,106,0.32), rgba(255,255,255,0.05));
+    }
+
+    .hero-right{
+      padding: 0;
+      display:flex;
+      flex-direction:column;
+      min-height: 260px;
+    }
+    .profile{
+      padding: 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      z-index: 1;
+    }
+    .profile-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .pill{
+      font-size: 12px;
+      color: rgba(233,236,241,0.80);
+      border: 1px solid rgba(214,180,106,0.22);
+      background: rgba(214,180,106,0.08);
+      padding: 7px 10px;
+      border-radius: 999px;
+      white-space:nowrap;
+    }
+    .avatar{
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      border: 1px solid rgba(214,180,106,0.35);
+      background:
+        radial-gradient(18px 18px at 35% 30%, rgba(243,211,123,0.95), rgba(214,180,106,0.10)),
+        linear-gradient(135deg, rgba(255,255,255,0.06), rgba(0,0,0,0.0));
+      box-shadow: 0 18px 45px rgba(214,180,106,0.12);
+      flex: 0 0 auto;
+    }
+    .meta{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .meta .item{
+      padding: 12px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+    }
+    .meta .label{ font-size: 11px; color: rgba(233,236,241,0.65); }
+    .meta .value{ margin-top:6px; font-size: 13px; color: rgba(233,236,241,0.92); }
+
+    /* Sections */
+    section{ margin-top: 28px; }
+    .section-head{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap: 14px;
+      margin: 0 0 12px;
+    }
+    .section-title{
+      font-size: 16px;
+      letter-spacing: .2px;
+      margin:0;
+    }
+    .section-sub{
+      margin:0;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    /* Gallery */
+    .gallery-card{ padding: 18px; }
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      margin: 0 0 12px;
+    }
+    .search{
+      flex: 1 1 260px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.14);
+      color: rgba(233,236,241,0.9);
+    }
+    .search input{
+      width:100%;
+      border:0;
+      outline:0;
+      background: transparent;
+      color: rgba(233,236,241,0.92);
+      font-size: 13px;
+    }
+    .filters{
+      display:flex; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
+      flex: 0 0 auto;
+    }
+    .chip{
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      font-size: 13px;
+      color: rgba(233,236,241,0.86);
+      cursor:pointer;
+      transition: transform .25s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
+      user-select:none;
+    }
+    .chip:hover{
+      transform: translateY(-1px);
+      border-color: rgba(214,180,106,0.35);
+      background: rgba(214,180,106,0.08);
+    }
+    .chip.active{
+      border-color: rgba(214,180,106,0.55);
+      background: rgba(214,180,106,0.12);
+      color: rgba(243,211,123,0.96);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px){
+      .grid{ gap: 10px; }
+    }
+    .tile{
+      grid-column: span 4;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      position: relative;
+      cursor: pointer;
+      min-height: 180px;
+      transform: translateZ(0);
+    }
+    @media (max-width: 900px){ .tile{ grid-column: span 6; } }
+    @media (max-width: 520px){ .tile{ grid-column: span 12; } }
+
+    .thumb{
+      position:absolute; inset:0;
+      background-size: cover;
+      background-position:center;
+      transition: transform .45s var(--ease), filter .45s var(--ease);
+      filter: saturate(1.02) contrast(1.02);
+    }
+    /* Hover zoom animation (요청 사항) */
+    .tile:hover .thumb{
+      transform: scale(1.08);
+      filter: saturate(1.05) contrast(1.05);
+    }
+    .overlay{
+      position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.72) 100%);
+      opacity: .95;
+    }
+    .tile .info{
+      position:absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap: 12px;
+    }
+    .tile .info h4{
+      margin:0;
+      font-size: 13.5px;
+      letter-spacing: .1px;
+    }
+    .tile .info p{
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: rgba(233,236,241,0.72);
+      line-height: 1.4;
+    }
+    .badge{
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(214,180,106,0.35);
+      background: rgba(214,180,106,0.10);
+      color: rgba(243,211,123,0.92);
+      font-size: 11.5px;
+      white-space:nowrap;
+    }
+
+    /* Modal */
+    .modal{
+      position: fixed; inset: 0;
+      display:none;
+      place-items:center;
+      background: rgba(0,0,0,0.62);
+      backdrop-filter: blur(12px);
+      z-index: 80;
+      padding: 18px;
+    }
+    .modal.open{ display:grid; }
+    .modal-box{
+      width: min(980px, 100%);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(20,22,26,0.92), rgba(12,14,18,0.92));
+      box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+      overflow:hidden;
+    }
+    .modal-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .modal-top .m-title{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .modal-top .m-title strong{
+      font-size: 14px;
+      letter-spacing: .1px;
+    }
+    .modal-top .m-title span{
+      font-size: 12px;
+      color: rgba(233,236,241,0.70);
+    }
+    .xbtn{
+      width: 38px; height: 38px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: rgba(233,236,241,0.88);
+      cursor:pointer;
+      transition: transform .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+    }
+    .xbtn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(214,180,106,0.35);
+      background: rgba(214,180,106,0.10);
+    }
+    .modal-media{
+      height: min(60vh, 520px);
+      background: #0b0d10;
+      position:relative;
+    }
+    .modal-media .img{
+      position:absolute; inset:0;
+      background-size: cover;
+      background-position:center;
+    }
+    .modal-body{
+      padding: 14px 16px 18px;
+      color: rgba(233,236,241,0.82);
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .modal-body .hint{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px dashed rgba(214,180,106,0.35);
+      background: rgba(214,180,106,0.06);
+      color: rgba(243,211,123,0.85);
+      font-size: 12.5px;
+    }
+
+    /* Footer */
+    footer{
+      margin-top: 26px;
+      padding: 18px 0 12px;
+      color: rgba(233,236,241,0.72);
+    }
+    .footer-card{
+      padding: 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+    .email{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(214,180,106,0.32);
+      background: rgba(214,180,106,0.08);
+      color: rgba(243,211,123,0.92);
+      font-size: 13px;
+    }
+    .copy{
+      font-size: 12px;
+      color: rgba(233,236,241,0.55);
+    }
+
+    /* Small utility */
+    .sr{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="name">김희정</div>
+          <div class="tag">AI/클라우드 서비스 전략 · 강의 · 멘토링</div>
+        </div>
+      </div>
+
+      <nav class="navlinks" aria-label="페이지 내 이동">
+        <a href="#about">소개</a>
+        <a href="#gallery">갤러리</a>
+        <a href="#contact">연락처</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- HERO / ABOUT -->
+    <section id="about" class="hero">
+      <div class="card hero-left">
+        <div class="kicker">Portfolio</div>
+        <h1 class="title">
+          데이터로 문제를 정의하고,<br />
+          <span class="gold">AI/클라우드</span>로 해결합니다
+        </h1>
+        <p class="desc">
+          사용자 문제를 데이터로 정의하고, AI/클라우드 기반 서비스로 해결하는 일을 합니다.
+          강의·멘토링·기획을 통해 팀과 학습자가 “만들어내는 경험”까지 도달하도록 돕습니다. 감사합니다
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#gallery">작업 보기</a>
+          <button class="btn" id="copyEmailBtn" type="button">이메일 복사</button>
+        </div>
+      </div>
+
+      <div class="card hero-right">
+        <div class="profile">
+          <div class="profile-top">
+            <div>
+              <div style="font-weight:800; letter-spacing:-0.2px;">김희정</div>
+              <div style="margin-top:6px; font-size:13px; color: rgba(233,236,241,0.72);">
+                IT 서비스 비즈니스 전략 · 강의자
+              </div>
+            </div>
+            <div class="avatar" aria-hidden="true"></div>
+          </div>
+
+          <div class="meta" style="margin-top:16px;">
+            <div class="item">
+              <div class="label">주요 역량</div>
+              <div class="value">문제정의 · KPI · 실험설계</div>
+            </div>
+            <div class="item">
+              <div class="label">적용 분야</div>
+              <div class="value">AI/클라우드 기반 서비스</div>
+            </div>
+            <div class="item">
+              <div class="label">업무 방식</div>
+              <div class="value">기획 → 실험 → 개선</div>
+            </div>
+            <div class="item">
+              <div class="label">관심 주제</div>
+              <div class="value">학습경험 · 운영 효율화</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:16px 22px 22px; color: rgba(233,236,241,0.70); font-size: 13px; line-height: 1.7; position:relative; z-index:1;">
+          <div class="pill">한 줄 소개</div>
+          <div style="margin-top:10px;">
+            “사용자의 문제를 구조화해 <span style="color: rgba(243,211,123,0.92);">실행 가능한 개선안</span>으로 바꾸고,
+            팀이 빠르게 검증할 수 있도록 돕습니다.”
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery" style="margin-top: 22px;">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">사진 갤러리</h2>
+          <p class="section-sub">이미지에 마우스를 올리면 확대됩니다. 클릭하면 크게 볼 수 있어요.</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; color: rgba(233,236,241,0.60); font-size:12px;">
+          <span id="countText">0 items</span>
+        </div>
+      </div>
+
+      <div class="card gallery-card">
+        <div class="toolbar">
+          <div class="search" role="search">
+            <span aria-hidden="true">⌕</span>
+            <label class="sr" for="q">검색</label>
+            <input id="q" type="search" placeholder="예: AI, 강의, 기획, 프로젝트…" autocomplete="off" />
+          </div>
+          <div class="filters" aria-label="필터">
+            <div class="chip active" data-filter="all">전체</div>
+            <div class="chip" data-filter="lecture">강의</div>
+            <div class="chip" data-filter="strategy">전략</div>
+            <div class="chip" data-filter="project">프로젝트</div>
+          </div>
+        </div>
+
+        <div class="grid" id="grid"></div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <footer id="contact">
+      <div class="card footer-card">
+        <div>
+          <div style="font-weight:800; letter-spacing:-0.2px;">Contact</div>
+          <div class="copy" style="margin-top:6px;">협업·강의·멘토링 문의는 아래 이메일로 부탁드립니다.</div>
+        </div>
+        <a class="email" href="mailto:ABC@gmail.com" id="emailLink">ABC@gmail.com</a>
+      </div>
+      <div class="copy" style="margin-top:10px;">© <span id="year"></span> Kim Heejeong. All rights reserved.</div>
+    </footer>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="modal-top">
+        <div class="m-title">
+          <strong id="mTitle">작업 보기</strong>
+          <span id="mMeta">—</span>
+        </div>
+        <button class="xbtn" id="closeModal" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-media">
+        <div class="img" id="mImg"></div>
+      </div>
+      <div class="modal-body">
+        <div id="mDesc"></div>
+        <div class="hint">팁: 실제 이미지 파일로 교체하려면 JS의 gallery 데이터에서 url 값을 바꾸면 됩니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 샘플 갤러리 데이터 (원하는 이미지로 교체 가능)
+    // 실제 사진을 쓰려면 url에 이미지 링크(또는 로컬 경로)만 바꿔주세요.
+    const gallery = [
+      {
+        title: "AI 강의 커리큘럼 설계",
+        desc: "학습 목표 → 실습 → 프로젝트까지 이어지는 구성 설계 사례.",
+        tag: "lecture",
+        url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=80"
+      },
+      {
+        title: "서비스 전략 워크숍",
+        desc: "문제정의, KPI 설계, 가설 수립 및 실험 계획 수립.",
+        tag: "strategy",
+        url: "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1400&q=80"
+      },
+      {
+        title: "프로젝트 실행 & 개선",
+        desc: "데이터 기반으로 빠르게 만들고, 검증하고, 개선하는 루프.",
+        tag: "project",
+        url: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1400&q=80"
+      },
+      {
+        title: "클라우드 기반 운영 최적화",
+        desc: "운영 자동화와 관측(Observability) 기반 개선 사례.",
+        tag: "strategy",
+        url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
+      },
+      {
+        title: "멘토링 세션",
+        desc: "학습자가 결과물을 끝까지 완성하도록 돕는 코칭 방식.",
+        tag: "lecture",
+        url: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80"
+      },
+      {
+        title: "프로덕트 기획 문서화",
+        desc: "요구사항 정리 → 사용자 흐름 → 측정 지표까지 연결.",
+        tag: "project",
+        url: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=80"
+      }
+    ];
+
+    const grid = document.getElementById("grid");
+    const q = document.getElementById("q");
+    const chips = Array.from(document.querySelectorAll(".chip"));
+    const countText = document.getElementById("countText");
+
+    const modal = document.getElementById("modal");
+    const closeModalBtn = document.getElementById("closeModal");
+    const mTitle = document.getElementById("mTitle");
+    const mMeta = document.getElementById("mMeta");
+    const mImg = document.getElementById("mImg");
+    const mDesc = document.getElementById("mDesc");
+
+    let activeFilter = "all";
+
+    function badgeLabel(tag){
+      if(tag === "lecture") return "강의";
+      if(tag === "strategy") return "전략";
+      if(tag === "project") return "프로젝트";
+      return "전체";
+    }
+
+    function render(items){
+      grid.innerHTML = "";
+      items.forEach((item, idx) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.tabIndex = 0;
+        tile.setAttribute("role","button");
+        tile.setAttribute("aria-label", item.title + " 상세 보기");
+
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+        thumb.style.backgroundImage = `url('${item.url}')`;
+
+        const overlay = document.createElement("div");
+        overlay.className = "overlay";
+
+        const info = document.createElement("div");
+        info.className = "info";
+        info.innerHTML = `
+          <div>
+            <h4>${item.title}</h4>
+            <p>${item.desc}</p>
+          </div>
+          <div class="badge">${badgeLabel(item.tag)}</div>
+        `;
+
+        tile.appendChild(thumb);
+        tile.appendChild(overlay);
+        tile.appendChild(info);
+
+        tile.addEventListener("click", () => openModal(item));
+        tile.addEventListener("keydown", (e) => {
+          if(e.key === "Enter" || e.key === " "){
+            e.preventDefault();
+            openModal(item);
+          }
+        });
+
+        grid.appendChild(tile);
+      });
+
+      countText.textContent = `${items.length} items`;
+    }
+
+    function apply(){
+      const query = (q.value || "").trim().toLowerCase();
+      const items = gallery.filter(item => {
+        const okFilter = activeFilter === "all" ? true : item.tag === activeFilter;
+        const okQuery =
+          !query ||
+          item.title.toLowerCase().includes(query) ||
+          item.desc.toLowerCase().includes(query) ||
+          badgeLabel(item.tag).toLowerCase().includes(query);
+        return okFilter && okQuery;
+      });
+      render(items);
+    }
+
+    // Filter chips
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        chips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeFilter = chip.dataset.filter;
+        apply();
+      });
+    });
+
+    // Search
+    q.addEventListener("input", apply);
+
+    // Modal open/close
+    function openModal(item){
+      mTitle.textContent = item.title;
+      mMeta.textContent = badgeLabel(item.tag);
+      mImg.style.backgroundImage = `url('${item.url}')`;
+      mDesc.textContent = item.desc;
+
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+
+      // focus close button for accessibility
+      closeModalBtn.focus();
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(){
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    closeModalBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => {
+      if(e.target === modal) closeModal();
+    });
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape" && modal.classList.contains("open")) closeModal();
+    });
+
+    // Copy email
+    const email = "ABC@gmail.com";
+    const copyEmailBtn = document.getElementById("copyEmailBtn");
+    copyEmailBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(email);
+        const original = copyEmailBtn.textContent;
+        copyEmailBtn.textContent = "복사 완료";
+        setTimeout(() => (copyEmailBtn.textContent = original), 900);
+      }catch(err){
+        alert("복사에 실패했습니다. 이메일을 직접 선택해 복사해 주세요: " + email);
+      }
+    });
+
+    // Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Initial render
+    apply();
+  </script>
+</body>
+</html>
