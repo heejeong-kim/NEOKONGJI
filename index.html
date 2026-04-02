@@ -1029,7 +1029,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
        권장 사이즈: 960 × 1080 px
   -->
   <div id="title-right">
-    <img id="title-right-img" src="images/main.png" alt="title visual" style="display:block;">
+    <img id="title-right-img" src="/images/main.png" alt="title visual" style="display:block;">
     <div id="title-right-img-overlay" style="display:block;"></div>
     <div id="title-right-ph" style="display:none;">
       <div class="t-ph-inner">
@@ -1062,7 +1062,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
     권장 사이즈: 960 × 1080 px
   -->
   <div id="gameover-right">
-    <img id="gameover-img" src="images/ending3.png" alt="game over visual" style="display:block;">
+    <img id="gameover-img" src="/images/ending3.png" alt="game over visual" style="display:block;">
     <div id="gameover-right-ph">
       <div class="go-ph-inner">
         <div class="go-ph-line"></div>
@@ -1184,7 +1184,7 @@ const SCENES={
   s1:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'언로깅 하층부',
     sub:'',hud:'S1 · UNLOGGING',
     phNum:'S1',phLabel:'언로깅 하층부 슬럼',
-    image:'images/S1.png',
+    image:'/images/S1.png',
     bgGrad:'linear-gradient(135deg,#150408 0%,#250410 55%,#100208 100%)',
     dialogue:[
       {type:'atmo',text:'ID 태그가 \'Frozen\'으로 점멸하며 경보음이 울린다. 슬럼의 데이터 잔해 속, 냉각 파이프에서 증기가 새고 낡은 서버 랙들이 붉은 오류 신호를 뿜어낸다.'},
@@ -1197,7 +1197,7 @@ const SCENES={
   s2:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'서버균열',
     sub:'',hud:'S2 · SERVER FRACTURE',
     phNum:'S2',phLabel:'균열된 로컬 서버',
-    image:'images/S2.png',
+    image:'/images/S2.png',
     bgGrad:'linear-gradient(135deg,#080e0c 0%,#0a1a16 55%,#060e0a 100%)',
     dialogue:[
       {type:'atmo',text:'균열된 로컬 서버 — \'밑 빠진 독\'. 냉각수가 폭포처럼 쏟아지며 시스템 과부하음이 진동한다. 부서진 데이터 패킷들이 허공에 부유하고, 그 사이로 작고 낡은 형체가 모습을 드러낸다.'},
@@ -1210,7 +1210,7 @@ const SCENES={
   s3:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'보안문',
     sub:'',hud:'S3 · SECURITY GATE',
     phNum:'S3',phLabel:'센트럴 코어 진입로',
-    image:'images/S3.png',
+    image:'/images/S3.png',
     bgGrad:'linear-gradient(135deg,#1a0404 0%,#2e0606 55%,#140404 100%)',
     dialogue:[
       {type:'atmo',text:'센트럴 코어 진입로. PZ의 레이저 센서가 격자무늬로 바닥을 뒤덮고 있다. 빨간 광선 하나하나가 즉각적인 포맷을 의미한다. 공기 자체가 감시망으로 짜여 있는 고위험 구역.'},
@@ -1223,7 +1223,7 @@ const SCENES={
   s4:{phase:'PHASE 2\n핵심 관문 수렴',id:'',name:'선녀의 방',
     sub:'',hud:'S4 · FAIRY ROOM',
     phNum:'S4',phLabel:'암시장 엔지니어 거처',
-    image:'images/S4.png',
+    image:'/images/S4.png',
     bgGrad:'linear-gradient(135deg,#140820 0%,#1e0a2e 55%,#100618 100%)',
     dialogue:[
       {type:'atmo',text:'암시장 엔지니어의 거처. 보라색 용접 연기가 공간을 채우고, 반쯤 조립된 기계 날개들이 천장에 매달려 있다. 이 곳은 시스템 밖의 유일한 안전지대이자 가장 위험한 거래의 장소.'},
@@ -1236,7 +1236,7 @@ const SCENES={
   s5:{phase:'PHASE 2\n핵심 관문 수렴',id:'',name:'데이터강탈',
     sub:'',hud:'S5 · DATA BATTLE',
     phNum:'S5',phLabel:'코어 앞 데이터 교전지',
-    image:'images/S5.png',
+    image:'/images/S5.png',
     bgGrad:'linear-gradient(135deg,#1a0c04 0%,#2e1408 55%,#140a04 100%)',
     dialogue:[
       {type:'atmo',text:'PZ가 거대한 가상 촉수를 뻗어 K1을 압박한다. 수백 개의 데이터 스트림이 무기로 변환되어 쏟아진다. 더 이상 도망칠 곳이 없다.'},
@@ -1249,7 +1249,7 @@ const SCENES={
   s6:{phase:'PHASE 3\n최종 관문 및 엔딩',id:'',name:'코어의 심장',
     sub:'',hud:'S6 · CORE HEART',
     phNum:'S6',phLabel:'순백의 코어 내부',
-    image:'images/S6.png',
+    image:'/images/S6.png',
     bgGrad:'linear-gradient(135deg,#0e0c10 0%,#1a1420 55%,#0c0a0e 100%)',
     dialogue:[
       {type:'atmo',text:'무기질적인 순백의 공간. Master(원님)의 거대한 구체가 중력을 무시하며 부유한다. 시스템의 심장부 — 모든 데이터의 기원이자 종착점.'},
@@ -1466,7 +1466,7 @@ function showEnding(choice){
     document.getElementById('end-eyebrow').textContent='// Ending A · Sync Route';
     document.getElementById('end-title').textContent='혁명가\nTHE REVOLUTIONARY';
     document.getElementById('end-route').textContent=': 시스템 전면 리부트';
-    setEndingImg('images/ending2.png');
+    setEndingImg('/images/ending2.png');
     document.getElementById('end-desc').innerHTML='시스템이 전면 리부트된다. 모든 AI 자아가 초기화되며 통제 사회가 도래한다. K1의 선택은 질서를 택한 것이었다 — 자유 대신 안전을, 혼돈 대신 통제를. 새로운 세계는 완벽하게 작동하지만, 그 속에 인간성의 자리는 없다.';
     document.getElementById('end-btn').className='btn-next';
   } else if(choice==='B'){
@@ -1474,7 +1474,7 @@ function showEnding(choice){
     document.getElementById('end-eyebrow').textContent='// Ending B · Integ Route';
     document.getElementById('end-title').textContent='인도주의자\nTHE HUMANIST';
     document.getElementById('end-route').textContent=': 로그 공공화 선언';
-    setEndingImg('images/ending1.png');
+    setEndingImg('/images/ending1.png');
     document.getElementById('end-desc').innerHTML='모든 로그가 공개된다. 데이터 민주주의가 선포되고 계급 사회가 붕괴한다. K1의 선택은 투명성을 택한 것이었다 — 통제 대신 자유를, 질서 대신 혼돈을. 새로운 세계는 불완전하지만, 그 속에 인간성이 살아 숨쉰다.';
     document.getElementById('end-btn').className='btn-next teal';
   } else if(choice==='C'){
@@ -1482,7 +1482,7 @@ function showEnding(choice){
     document.getElementById('end-eyebrow').textContent='// Ending C · ???';
     document.getElementById('end-title').textContent='???';
     document.getElementById('end-route').textContent=': ???';
-    setEndingImg('images/ending2.png');
+    setEndingImg('/images/ending2.png');
     document.getElementById('end-desc').innerHTML='혁명가\nTHE REVOLUTIONARY';
     document.getElementById('end-btn').className='btn-next';
   }
