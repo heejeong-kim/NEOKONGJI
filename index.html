@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEO-KONGJI 2099 : 깨진 데이터의 그림자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  /* ── 사이버 적색 팔레트 ── */
+  --bg:       #080408;
+  --bg2:      #0e0608;
+  --panel:    rgba(8,4,8,0.95);
+  --border:   rgba(220,38,38,0.28);
+  --border2:  rgba(220,38,38,0.12);
+
+  /* 메인 액센트: 적색 계열 */
+  --accent:   #dc2626;   /* 원색 레드 */
+  --accent-h: #ef4444;   /* hover 브라이트 */
+  --accent-g: #ff6060;   /* 글로우용 밝은 레드 */
+  --accent2:  #f97316;   /* 보조: 오렌지-레드 */
+  --accent2-h:#fb923c;
+
+  --danger:   #ff2222;
+  --warn:     #f97316;
+  --ok:       #22c55e;
+  --text:     #fff0f0;
+  --muted:    #7a5a5a;
+
+  /* 스탯 컬러 */
+  --sync-c:   #f87171;   /* Sync: 레드 */
+  --integ-c:  #fb923c;   /* Integ: 오렌지 */
+  --noise-c:  #fbbf24;   /* Noise: 앰버 */
+
+  --serif:    'Noto Sans KR',sans-serif;
+  --mono:     'Share Tech Mono',monospace;
+  --display:  'Orbitron',monospace;
+
+  /* 네온 글로우 */
+  --glow-r:   0 0 8px rgba(220,38,38,.9), 0 0 20px rgba(220,38,38,.5), 0 0 40px rgba(220,38,38,.25);
+  --glow-o:   0 0 8px rgba(249,115,22,.9), 0 0 20px rgba(249,115,22,.5), 0 0 40px rgba(249,115,22,.25);
+  --glow-sm:  0 0 6px rgba(220,38,38,.7), 0 0 14px rgba(220,38,38,.3);
+  /* 선택지: A=그린, B=옐로 */
+  --choice-a:    #16a34a;
+  --choice-a-h:  #4ade80;
+  --choice-b:    #ca8a04;
+  --choice-b-h:  #facc15;
+  --glow-ga: 0 0 8px rgba(74,222,128,.9), 0 0 20px rgba(74,222,128,.5), 0 0 40px rgba(74,222,128,.2);
+  --glow-gb: 0 0 8px rgba(250,204,21,.9), 0 0 20px rgba(250,204,21,.5), 0 0 40px rgba(250,204,21,.2);
+}
+
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--serif);}
+
+/* scanline */
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);}
+
+/* ════════════════════════════════════
+   LAYOUT  [HUD 52px] [STAGE flex] [BOTTOM 240px]
+════════════════════════════════════ */
+#layout{display:grid;grid-template-rows:52px 1fr 240px;width:100vw;height:100vh;}
+
+/* ════════════════════════════════════
+   HUD
+════════════════════════════════════ */
+#hud{
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+  background:rgba(8,4,8,.98);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 20px rgba(220,38,38,.12);
+  z-index:100;
+}
+.hud-logo{
+  font-family:var(--display);font-size:15px;font-weight:900;  /* +4 */
+  color:var(--accent-g);
+  letter-spacing:5px;
+  text-shadow:var(--glow-sm);
+  cursor:pointer;
+  transition:opacity .2s;
+}
+.hud-logo:hover{opacity:.7;}
+.hud-stats{display:flex;gap:20px;}
+.hud-stat{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:15px;}
+.hud-label{font-size:13px;letter-spacing:1.5px;color:var(--muted);}
+.hud-bar{width:56px;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.hud-fill{height:100%;border-radius:2px;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.sf{background:var(--sync-c);box-shadow:0 0 6px var(--sync-c);}
+.if{background:var(--integ-c);box-shadow:0 0 6px var(--integ-c);}
+.nf{background:var(--noise-c);box-shadow:0 0 6px var(--noise-c);}
+.hud-num{font-size:17px;font-weight:700;min-width:28px;text-align:right;}
+.hud-key{font-family:var(--mono);font-size:14px;color:var(--muted);letter-spacing:1px;display:flex;align-items:center;gap:7px;}
+.key-badge{padding:3px 10px;border:1px solid;border-radius:3px;font-size:13px;letter-spacing:1px;font-family:var(--mono);}
+.key-badge.on{border-color:var(--ok);color:var(--ok);box-shadow:0 0 8px rgba(34,197,94,.3);}
+.key-badge.off{border-color:var(--danger);color:var(--danger);}
+.hud-scene{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:2px;}  /* +2 */
+
+/* ════════════════════════════════════
+   STAGE
+════════════════════════════════════ */
+#stage{position:relative;overflow:hidden;background:#000;}
+.stage-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s;}
+#video-countdown{
+  position:absolute;bottom:18px;right:20px;z-index:30;
+  font-family:var(--display);font-size:2.8rem;font-weight:900;
+  color:#fff;text-shadow:0 0 12px #f00,0 0 24px #f00;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+  line-height:1;
+}
+#video-countdown.visible{opacity:1;}
+#stage-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .5s;}
+.ph-inner{text-align:center;pointer-events:none;}
+.ph-num{font-family:var(--display);font-size:14vw;font-weight:900;opacity:.03;color:#fff;line-height:1;display:block;}
+.ph-label{font-family:var(--mono);font-size:14px;letter-spacing:3px;color:var(--muted);opacity:.35;display:block;margin-top:-2vw;}
+#stage-media{position:absolute;inset:0;animation:glitchLoop 3s ease infinite;}
+
+/* 하단 그라디언트 — 배경색 연동 */
+#stage::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(to top,rgba(8,4,8,.99) 0%,rgba(8,4,8,.75) 26%,rgba(8,4,8,.12) 54%,transparent 100%);}
+/* 상단 좌측 레드 글로 */
+#stage::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(135deg,rgba(220,38,38,.08) 0%,transparent 45%);}
+
+/* 노이즈 배너 */
+#noise-warn{position:absolute;top:0;left:0;right:0;
+  background:rgba(220,38,38,.1);border-bottom:1px solid rgba(220,38,38,.35);
+  padding:6px 18px;font-family:var(--mono);font-size:12px;letter-spacing:2px;color:#ff6060;
+  display:none;align-items:center;gap:9px;z-index:20;}
+#noise-warn.show{display:flex;}
+.nw-dot{width:7px;height:7px;border-radius:50%;background:#ff2222;
+  box-shadow:0 0 8px #ff2222;animation:blink .5s infinite;flex-shrink:0;}
+
+/* 조건 태그 */
+#stage-conditions{position:absolute;top:16px;left:16px;display:flex;flex-wrap:wrap;gap:8px;z-index:10;}
+.cond-chip{display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.5px;backdrop-filter:blur(8px);border:1px solid;}
+.cond-chip.active{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.4);color:#86efac;}
+.cond-chip.inactive{background:rgba(122,90,90,.08);border-color:rgba(122,90,90,.25);color:#7a5a5a;}
+.cond-chip.warn{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.45);color:#ff8080;}
+.cond-dot{width:5px;height:5px;border-radius:50%;}
+.active .cond-dot{background:#22c55e;box-shadow:0 0 5px #22c55e;}
+.inactive .cond-dot{background:#7a5a5a;}
+.warn .cond-dot{background:#ff2222;box-shadow:0 0 6px #ff2222;animation:blink .7s infinite;}
+
+/* 페이즈 배지 */
+#stage-phase{position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:11px;
+  letter-spacing:2px;color:rgba(255,200,200,.2);text-transform:uppercase;z-index:10;text-align:right;line-height:1.8;white-space:pre;}
+
+/* 씬 타이틀 */
+
+/* ════════════════════════════════════
+   BOTTOM PANEL
+════════════════════════════════════ */
+#bottom{display:grid;grid-template-columns:220px 1fr 340px;
+  background:var(--panel);border-top:1px solid var(--border);overflow:hidden;}
+
+/* 씬 타이틀 패널 (좌측 1열) */
+#scene-title-panel{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:20px 24px;
+  border-right:1px solid var(--border);
+  background:rgba(220,38,38,.03);
+  overflow:hidden;
+  position:relative;
+}
+#scene-title-panel::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg,rgba(220,38,38,.06) 0%,transparent 60%);
+}
+.stp-phase{
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;
+  color:rgba(220,38,38,.5);text-transform:uppercase;
+  margin-bottom:12px;line-height:1.6;
+  white-space:pre;
+}
+.stp-name{
+  font-family:var(--display);
+  font-size:clamp(16px,1.8vw,22px);
+  font-weight:900;color:#fff;
+  line-height:1.15;
+  text-shadow:0 0 20px rgba(220,38,38,.3);
+  word-break:keep-all;
+}
+.stp-divider{
+  width:32px;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  box-shadow:var(--glow-sm);
+  margin:12px 0;
+}
+.stp-hud{
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;
+  color:rgba(255,150,150,.35);
+}
+
+/* 대사 영역 (중앙 2열) */
+#dialogue-area{padding:18px 24px;display:flex;flex-direction:column;justify-content:flex-start;gap:12px;
+  border-right:1px solid var(--border);overflow-y:auto;scroll-behavior:smooth;position:relative;}
+#dialogue-area::-webkit-scrollbar{width:3px;}
+#dialogue-area::-webkit-scrollbar-track{background:transparent;}
+#dialogue-area::-webkit-scrollbar-thumb{background:rgba(220,38,38,.35);border-radius:2px;}
+#dialogue-area::-webkit-scrollbar-thumb:hover{background:rgba(220,38,38,.6);}
+.dl-entry{display:flex;flex-direction:column;gap:5px;animation:dlIn .35s ease forwards;opacity:0;}
+@keyframes dlIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.speaker-name{font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;}
+/* ── 캐릭터 이름 컬러 ── */
+.sp-k1    {color:#ffffff;text-shadow:0 0 8px rgba(255,255,255,.45);}
+.sp-toad  {color:#fbbf24;}
+.sp-pz    {color:#fca5a5;text-shadow:0 0 8px rgba(252,165,165,.4);}
+.sp-fairy {color:#e9d5ff;}
+.sp-master{color:#fde68a;text-shadow:0 0 8px rgba(253,230,138,.4);}
+/* ── 대사 텍스트 기본 ── */
+.dl-text{font-family:var(--serif);font-size:17px;font-weight:400;line-height:1.9;
+  color:rgba(255,240,240,.9);word-break:keep-all;}
+/* ── 캐릭터별 대사 텍스트 컬러 ── */
+.dl-k1    {color:#ffffff;}
+.dl-toad  {color:#fbbf24;}
+.dl-pz    {color:#fca5a5;}
+.dl-fairy {color:#e9d5ff;}
+.dl-master{color:#fde68a;}
+.atmo-text{font-family:var(--serif);font-size:15px;font-style:normal;  /* +2 */
+  color:rgba(255,220,220,.4);line-height:1.85;
+  border-left:2px solid rgba(220,38,38,.3);padding-left:14px;}
+
+/* ── 선택지 영역 (네온 스타일) ── */
+#choice-area{display:flex;flex-direction:column;padding:16px 16px;gap:10px;justify-content:center;
+  background:rgba(8,4,8,.6);}
+.choice-label{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--muted);  /* +2 */
+  text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+
+/* 네온 버튼 베이스 */
+.choice-btn{
+  display:flex;align-items:stretch;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:4px;
+  cursor:pointer;overflow:hidden;
+  transition:all .22s;text-align:left;width:100%;
+  position:relative;
+}
+/* 버튼 좌측 레드 사이드라인 */
+.choice-btn::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--choice-a);
+  box-shadow:var(--glow-ga);
+  transition:all .22s;
+}
+.choice-btn.opt-b::before{background:var(--choice-b-h);box-shadow:var(--glow-gb);}
+
+/* 호버 — 네온 점등 효과 */
+.choice-btn.opt-a:hover{
+  border-color:var(--choice-a-h);
+  background:rgba(34,197,94,.08);
+  transform:translateX(4px);
+  box-shadow:var(--glow-ga);
+}
+.choice-btn.opt-a:hover::before{width:3px;box-shadow:var(--glow-ga);}
+
+.choice-btn.opt-b:hover{
+  border-color:var(--choice-b-h);
+  background:rgba(250,204,21,.07);
+  transform:translateX(4px);
+  box-shadow:var(--glow-gb);
+}
+.choice-btn.opt-b:hover::before{width:3px;box-shadow:var(--glow-gb);}
+
+.choice-key{
+  font-family:var(--display);font-size:15px;font-weight:900;  /* +2 */
+  padding:12px 14px;
+  border-right:1px solid rgba(220,38,38,.15);
+  display:flex;align-items:center;justify-content:center;min-width:42px;
+  transition:all .22s;
+}
+.opt-a .choice-key{color:var(--choice-a-h);text-shadow:var(--glow-ga);}
+.opt-b .choice-key{color:var(--choice-b-h);text-shadow:var(--glow-gb);}
+.opt-a:hover .choice-key{text-shadow:var(--glow-ga);}
+.opt-b:hover .choice-key{text-shadow:var(--glow-gb);}
+
+.choice-body{padding:10px 14px;flex:1;}
+.choice-title{font-family:var(--serif);font-size:15px;font-weight:600;  /* +2 */
+  color:var(--text);margin-bottom:4px;line-height:1.3;}
+.choice-fx{font-family:var(--mono);font-size:12px;letter-spacing:.3px;line-height:1.6;}  /* +2 */
+.pos{color:#4ade80;}.neg{color:#ff6060;}.neu{color:var(--warn);}
+
+/* 일반 버튼 */
+.btn-next{font-family:var(--display);font-size:14px;letter-spacing:3px;  /* +2 */
+  background:transparent;border:1px solid var(--accent);color:var(--accent-g);
+  padding:12px 20px;border-radius:4px;cursor:pointer;transition:all .2s;width:100%;
+  text-shadow:var(--glow-sm);box-shadow:inset 0 0 0 0 var(--accent);}
+.btn-next:hover{background:var(--accent);color:#fff;box-shadow:var(--glow-r);}
+.btn-next.teal{border-color:var(--accent2);color:var(--accent2-h);}
+.btn-next.teal:hover{background:var(--accent2);color:#000;box-shadow:var(--glow-o);}
+.btn-next.red{border-color:#ff2222;color:#ff6060;}
+.btn-next.red:hover{background:#ff2222;color:#fff;box-shadow:var(--glow-r);}
+
+/* ════════════════════════════════════
+   TITLE SCREEN — HARDCOVER BOOK
+════════════════════════════════════ */
+#screen-title{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 160% 100% at 50% 108%,#280707 0%,#0c0303 40%,#040101 100%);
+  z-index:1000;transition:opacity .5s;overflow:hidden;
+}
+#screen-title.hide{opacity:0;pointer-events:none;display:none;}
+/* 격자 텍스처 */
+#screen-title::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(220,38,38,.014) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(220,38,38,.014) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+/* 바닥 앰비언트 글로 */
+#screen-title::after{
+  content:'';position:absolute;bottom:-8%;left:50%;transform:translateX(-50%);
+  width:65%;height:32%;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at center bottom,rgba(220,38,38,.16) 0%,transparent 68%);
+}
+
+/* ── 책 부유 + 기울기 애니메이션 ── */
+@keyframes bookFloat{
+  0%,100%{transform:perspective(1600px) rotateY(-7deg) translateY(0);}
+  50%{transform:perspective(1600px) rotateY(-7deg) translateY(-16px);}
+}
+
+/* ── 책 전체 래퍼 ── */
+#book-wrap{
+  position:relative;z-index:2;
+  display:flex;align-items:stretch;
+  height:84vh;
+  filter:
+    drop-shadow(-20px 32px 60px rgba(0,0,0,.9))
+    drop-shadow(-6px 8px 20px rgba(0,0,0,.6))
+    drop-shadow(0 0 35px rgba(220,38,38,.1));
+  animation:bookFloat 7s ease-in-out infinite;
+}
+
+/* ── 책 등 (spine) ── */
+#book-spine{
+  width:56px;
+  background:linear-gradient(to right,#080101 0%,#1a0303 30%,#220404 60%,#140202 85%,#080101 100%);
+  border-top:1px solid rgba(220,38,38,.32);
+  border-bottom:1px solid rgba(220,38,38,.32);
+  border-left:1px solid rgba(50,6,6,.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;position:relative;overflow:hidden;
+  box-shadow:inset -6px 0 16px rgba(0,0,0,.7),inset 3px 0 8px rgba(220,38,38,.06);
+}
+#book-spine::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 5px,rgba(220,38,38,.022) 5px,rgba(220,38,38,.022) 6px);
+}
+#book-spine::after{
+  content:'';position:absolute;right:0;top:8%;bottom:8%;width:1px;
+  background:linear-gradient(to bottom,transparent,rgba(220,38,38,.38) 25%,rgba(220,38,38,.38) 75%,transparent);
+}
+.spine-line{
+  width:22px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(220,38,38,.52),transparent);
+}
+.spine-title{
+  font-family:var(--display);font-size:10px;letter-spacing:5px;
+  color:rgba(220,38,38,.72);
+  writing-mode:vertical-rl;text-orientation:mixed;
+  transform:rotate(180deg);
+  text-shadow:0 0 12px rgba(220,38,38,.45);
+}
+.spine-num{
+  font-family:var(--mono);font-size:8px;letter-spacing:3px;
+  color:rgba(255,255,255,.2);
+  writing-mode:vertical-rl;transform:rotate(180deg);
+}
+
+/* ── 책 앞표지 ── */
+#book-cover{
+  width:calc(84vh * 0.66);
+  height:100%;
+  position:relative;overflow:hidden;
+  border:1px solid rgba(220,38,38,.3);
+  border-left:none;
+  background:#050101;
+}
+/* 표지 이미지 */
+#title-right-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center top;
+  z-index:0;
+}
+/* 그라디언트 오버레이 */
+#book-cover::before{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(to top,rgba(3,0,0,.98) 0%,rgba(3,0,0,.9) 18%,rgba(3,0,0,.5) 38%,rgba(3,0,0,.15) 56%,transparent 74%),
+    linear-gradient(to bottom,rgba(3,0,0,.55) 0%,transparent 16%),
+    linear-gradient(to right,rgba(3,0,0,.22) 0%,transparent 12%);
+}
+/* 스캔라인 */
+#book-cover::after{
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.052) 3px,rgba(0,0,0,.052) 4px);
+}
+
+/* ── 장식 프레임 ── */
+#book-border-frame{
+  position:absolute;inset:13px;z-index:3;pointer-events:none;
+  border:1px solid rgba(220,38,38,.24);
+}
+#book-border-frame::before{
+  content:'';position:absolute;inset:6px;
+  border:1px solid rgba(220,38,38,.09);
+}
+.bc-corner{position:absolute;width:20px;height:20px;border-color:rgba(220,38,38,.62);border-style:solid;}
+.bc-corner.tl{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.bc-corner.tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.bc-corner.bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+.bc-corner.br{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+
+/* ── 상단 배지 ── */
+#book-top-badge{
+  position:absolute;top:28px;left:28px;z-index:4;
+}
+
+/* ── 하단 텍스트 영역 ── */
+#book-content{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:0 36px 30px;
+  z-index:4;
+  display:flex;flex-direction:column;
+}
+
+/* ── 텍스트 스타일 ── */
+.t-eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:5px;
+  color:rgba(255,255,255,.28);text-transform:uppercase;
+  margin-bottom:0;position:relative;z-index:1;
+}
+.t-main{
+  font-family:var(--display);
+  font-size:clamp(32px,5.2vw,68px);
+  font-weight:900;color:#fff;line-height:.88;
+  margin-bottom:10px;position:relative;z-index:1;
+  text-shadow:
+    0 0 40px rgba(255,255,255,.12),
+    2px 2px 0 rgba(220,38,38,.46),
+    4px 4px 0 rgba(220,38,38,.18);
+  letter-spacing:-1px;
+}
+.t-sub{
+  font-family:var(--mono);
+  font-size:clamp(10px,1.15vw,14px);
+  color:var(--accent-g);letter-spacing:4px;
+  margin-bottom:12px;position:relative;z-index:1;
+  text-shadow:var(--glow-sm);
+}
+.t-desc{
+  font-family:var(--serif);
+  font-size:clamp(12px,.95vw,14px);
+  line-height:1.85;color:rgba(255,255,255,.5);
+  margin-bottom:16px;position:relative;z-index:1;
+}
+.t-stats{
+  display:flex;gap:26px;
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.t-stat-item{display:flex;flex-direction:column;gap:3px;}
+.t-sicon{
+  font-family:var(--display);
+  font-size:clamp(11px,1.05vw,14px);
+  font-weight:900;letter-spacing:2px;
+}
+.t-sname{
+  font-family:var(--mono);font-size:10px;letter-spacing:2px;
+  color:rgba(255,255,255,.3);
+}
+
+/* 시작 버튼 */
+.btn-start{
+  font-family:var(--display);
+  font-size:clamp(12px,1.2vw,15px);
+  letter-spacing:5px;text-transform:uppercase;
+  background:transparent;
+  border:2px solid var(--accent-h);
+  color:var(--accent-g);
+  padding:14px 30px;
+  border-radius:50px;
+  cursor:pointer;
+  position:relative;overflow:hidden;
+  text-shadow:var(--glow-sm);
+  box-shadow:var(--glow-sm),inset 0 0 24px rgba(220,38,38,.06);
+  transition:all .3s;
+  display:inline-flex;align-items:center;gap:10px;
+  align-self:flex-start;
+  z-index:1;
+  animation:btnPulse 2.5s ease-in-out infinite;
+}
+.btn-start::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(220,38,38,.12),transparent);
+  transform:translateX(-100%);transition:transform .45s;
+}
+.btn-start:hover::before{transform:translateX(100%);}
+.btn-start:hover{
+  background:rgba(220,38,38,.14);
+  box-shadow:var(--glow-r);
+  color:#fff;letter-spacing:7px;animation:none;opacity:1;
+}
+@keyframes btnPulse{
+  0%,100%{box-shadow:var(--glow-sm),inset 0 0 24px rgba(220,38,38,.06);}
+  50%{box-shadow:0 0 16px rgba(220,38,38,.95),0 0 36px rgba(220,38,38,.5),0 0 60px rgba(220,38,38,.2),inset 0 0 24px rgba(220,38,38,.06);}
+}
+
+/* ── 이전 / STOP 버튼 행 ── */
+#nav-btn-row{
+  display:flex;gap:6px;margin-bottom:4px;
+}
+#back-btn2{
+  display:flex;
+  align-items:center;justify-content:center;gap:6px;flex:1;
+  font-family:var(--mono);font-size:12px;letter-spacing:2px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.3);
+  padding:9px 14px;border-radius:5px;
+  cursor:default;
+  transition:all .2s;
+  pointer-events:none;
+}
+#back-btn2.show{
+  border-color:rgba(255,255,255,.35);
+  color:rgba(255,255,255,.9);
+  cursor:pointer;
+  pointer-events:auto;
+}
+#back-btn2.show:hover{border-color:#facc15;color:#facc15;background:rgba(250,204,21,.06);}
+#back-btn2 svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+#stop-btn{
+  display:flex;align-items:center;justify-content:center;gap:5px;flex:1;
+  font-family:var(--mono);font-size:12px;letter-spacing:2px;
+  background:rgba(220,38,38,.08);
+  border:1px solid rgba(220,38,38,.6);
+  color:rgba(255,100,100,.95);
+  padding:9px 14px;border-radius:5px;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+#stop-btn:hover{border-color:#4ade80;color:#4ade80;background:rgba(74,222,128,.06);}
+#stop-btn.playing{border-color:rgba(74,222,128,.7);color:#4ade80;background:rgba(74,222,128,.06);}
+#stop-btn.playing:hover{border-color:rgba(220,38,38,.6);color:rgba(255,100,100,.95);background:rgba(220,38,38,.08);}
+
+/* ════════════════════════════════════
+   GAME OVER
+════════════════════════════════════ */
+#screen-gameover{
+  position:fixed;inset:0;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  background:#080404;
+  z-index:800;
+  overflow:hidden;
+}
+#screen-gameover.show{display:grid;animation:fadeIn .6s ease;}
+
+/* ── 게임오버 좌: 텍스트 ── */
+#gameover-left{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 48px 0 60px;
+  background:#080404;overflow:hidden;
+}
+#gameover-left::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
+  z-index:0;
+}
+#gameover-left::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(135deg,rgba(220,38,38,.08) 0%,transparent 55%);
+}
+.go-eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:6px;
+  color:rgba(255,255,255,.3);text-transform:uppercase;
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.go-title{
+  font-family:var(--display);
+  font-size:60px;
+  font-weight:900;color:#ff2222;line-height:.88;
+  letter-spacing:-1px;
+  text-shadow:0 0 40px rgba(255,34,34,.7),2px 2px 0 rgba(180,0,0,.5);
+  animation:glitch 3s infinite;
+  margin-bottom:16px;position:relative;z-index:1;
+}
+@keyframes glitch{
+  0%,90%,100%{transform:translate(0) skew(0)}
+  91%{transform:translate(-4px,1px) skew(-2deg);filter:hue-rotate(30deg)}
+  92%{transform:translate(4px,-1px) skew(2deg)}
+  93%{transform:translate(-2px,2px) skew(-1deg)}
+  94%{transform:translate(0)}
+}
+.go-divider{
+  width:48px;height:2px;
+  background:linear-gradient(90deg,var(--danger),rgba(220,38,38,.1));
+  box-shadow:0 0 8px rgba(255,34,34,.5);
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.go-reason{
+  font-family:var(--mono);font-size:13px;letter-spacing:2px;
+  color:rgba(255,150,150,.6);margin-bottom:28px;
+  position:relative;z-index:1;
+}
+
+/* ── 게임오버 우: 이미지 ── */
+#gameover-right{
+  position:relative;overflow:hidden;
+  border-left:1px solid rgba(220,38,38,.12);
+  background:linear-gradient(135deg,#1a0202 0%,#2e0404 30%,#1e0202 60%,#100101 100%);
+}
+#gameover-right::before{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 60% at 60% 45%,rgba(200,10,10,.5) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 30% at 75% 55%,rgba(255,34,34,.2) 0%,transparent 55%);
+}
+#gameover-right::after{
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);
+}
+#gameover-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  display:none;z-index:0;
+}
+#gameover-right-ph{
+  position:absolute;inset:0;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.go-ph-inner{text-align:center;pointer-events:none;}
+.go-ph-line{width:44px;height:1px;background:rgba(255,34,34,.35);box-shadow:0 0 8px rgba(255,34,34,.3);margin:0 auto 12px;}
+.go-ph-label{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:rgba(255,34,34,.28);text-transform:uppercase;display:block;}
+
+/* ══════════════════════════════════════
+   ENDING — 메인과 동일한 2분할 구조
+══════════════════════════════════════ */
+#screen-ending{
+  position:fixed;inset:0;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  background:#080404;
+  z-index:800;
+  overflow:hidden;
+}
+#screen-ending.show{display:grid;animation:fadeIn .6s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── 엔딩 좌: 텍스트 (메인 동일) ── */
+#ending-left{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 48px 0 60px;
+  background:#080404;overflow:hidden;
+}
+#ending-left::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
+  z-index:0;
+}
+#ending-left::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(135deg,rgba(220,38,38,.06) 0%,transparent 55%);
+}
+.end-eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:6px;
+  color:rgba(255,255,255,.3);text-transform:uppercase;
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.end-title{
+  font-family:var(--display);
+  font-size:60px;
+  font-weight:900;color:#fff;line-height:.88;
+  margin-bottom:16px;white-space:pre-line;
+  position:relative;z-index:1;
+  letter-spacing:-1px;word-break:keep-all;overflow:visible;
+}
+.ending-a .end-title{
+  text-shadow:0 0 40px rgba(255,255,255,.15),2px 2px 0 rgba(220,38,38,.4),4px 4px 0 rgba(220,38,38,.15);
+}
+.ending-b .end-title{
+  text-shadow:0 0 40px rgba(255,255,255,.15),2px 2px 0 rgba(20,184,166,.4),4px 4px 0 rgba(20,184,166,.15);
+}
+.end-divider{
+  width:48px;height:2px;
+  background:linear-gradient(90deg,var(--accent),rgba(220,38,38,.1));
+  box-shadow:var(--glow-sm);
+  margin-bottom:20px;position:relative;z-index:1;
+}
+.end-route{
+  font-family:var(--mono);
+  font-size:clamp(12px,1.5vw,16px);
+  color:var(--accent-g);letter-spacing:5px;
+  text-shadow:var(--glow-sm);
+  margin-bottom:28px;position:relative;z-index:1;
+}
+.end-desc{
+  font-size:11px;line-height:1.85;
+  color:rgba(255,220,220,.52);
+  font-family:var(--serif);
+  margin-bottom:20px;max-width:400px;
+  position:relative;z-index:1;
+}
+.end-quote{
+  font-family:var(--mono);font-size:12px;
+  letter-spacing:1px;line-height:1.9;color:var(--warn);
+  border-left:2px solid var(--warn);
+  padding:10px 18px;background:rgba(249,115,22,.04);
+  text-align:left;margin-bottom:24px;max-width:400px;
+  position:relative;z-index:1;
+}
+
+/* ── 엔딩 우: 이미지 (메인 동일) ── */
+#ending-right{
+  position:relative;overflow:hidden;
+  border-left:1px solid rgba(220,38,38,.12);
+}
+.ending-a #ending-right{
+  background:linear-gradient(135deg,#1a0404 0%,#2a0606 30%,#1e0404 60%,#120202 100%);
+}
+.ending-b #ending-right{
+  background:linear-gradient(135deg,#040a10 0%,#061420 30%,#040c10 60%,#020608 100%);
+}
+#ending-right::before{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 60% at 60% 45%,rgba(180,20,20,.45) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 30% at 75% 55%,rgba(220,38,38,.25) 0%,transparent 55%);
+}
+#ending-right::after{
+  content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(180deg,transparent 0px,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);
+}
+#ending-img-overlay{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:
+    linear-gradient(to right,rgba(8,2,2,.5) 0%,transparent 20%),
+    linear-gradient(to top,rgba(8,2,2,.4) 0%,transparent 30%);
+  display:none;
+}
+#ending-img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;
+  display:none;z-index:0;
+}
+#ending-right-ph{
+  position:absolute;inset:0;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.e-ph-inner{text-align:center;pointer-events:none;}
+.e-ph-line{width:44px;height:1px;background:rgba(220,38,38,.35);box-shadow:var(--glow-sm);margin:0 auto 12px;}
+.e-ph-label{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:rgba(220,38,38,.28);text-transform:uppercase;display:block;}
+
+/* ════════════════════════════════════
+   REPORT
+════════════════════════════════════ */
+.report{
+  background:rgba(220,38,38,.03);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:20px 26px;
+  margin-bottom:26px;
+  min-width:320px;
+  text-align:left;
+}
+.report-head{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:3px;
+  color:var(--muted);
+  margin-bottom:14px;
+  text-transform:uppercase;
+}
+.rrow{
+  display:flex;
+  justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid rgba(220,38,38,.08);
+  font-family:var(--mono);
+  font-size:16px;
+}
+.rrow:last-child{border-bottom:none;}
+.rk{color:var(--muted);}
+.rv{font-weight:700;}
+
+/* btn-next (gameover/ending 버튼) */
+.btn-next{
+  font-family:var(--display);
+  font-size:14px;
+  letter-spacing:3px;
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent-g);
+  padding:12px 20px;
+  border-radius:50px;
+  cursor:pointer;
+  transition:all .2s;
+  width:100%;
+  max-width:280px;
+  text-shadow:var(--glow-sm);
+}
+.btn-next:hover{background:var(--accent);color:#fff;box-shadow:var(--glow-r);}
+.btn-next.teal{border-color:var(--accent2);color:var(--accent2-h);}
+.btn-next.teal:hover{background:var(--accent2);color:#000;box-shadow:var(--glow-o);}
+.btn-next.red{border-color:#ff2222;color:#ff6060;}
+.btn-next.red:hover{background:#ff2222;color:#fff;box-shadow:var(--glow-r);}
+
+/* ════════════════════════════════════
+   FLASH / UTILS
+════════════════════════════════════ */
+#flash{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0;
+  background:rgba(220,38,38,.15);transition:opacity .15s;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(220,38,38,.3);border-radius:2px;}
+
+/* ════════════════════════════════════
+   GAME OVER
+════════════════════════════════════ */
+/* ════════════════════════════════════
+   REPORT
+════════════════════════════════════ */
+.report{
+  background:rgba(220,38,38,.03);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:20px 26px;
+  margin-bottom:26px;
+  min-width:320px;
+  text-align:left;
+}
+.report-head{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:3px;
+  color:var(--muted);
+  margin-bottom:14px;
+  text-transform:uppercase;
+}
+.rrow{
+  display:flex;
+  justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid rgba(220,38,38,.08);
+  font-family:var(--mono);
+  font-size:16px;
+}
+.rrow:last-child{border-bottom:none;}
+.rk{color:var(--muted);}
+.rv{font-weight:700;}
+
+/* btn-next (gameover/ending 버튼) */
+.btn-next{
+  font-family:var(--display);
+  font-size:14px;
+  letter-spacing:3px;
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent-g);
+  padding:12px 20px;
+  border-radius:50px;
+  cursor:pointer;
+  transition:all .2s;
+  width:100%;
+  max-width:280px;
+  text-shadow:var(--glow-sm);
+}
+.btn-next:hover{background:var(--accent);color:#fff;box-shadow:var(--glow-r);}
+.btn-next.teal{border-color:var(--accent2);color:var(--accent2-h);}
+.btn-next.teal:hover{background:var(--accent2);color:#000;box-shadow:var(--glow-o);}
+.btn-next.red{border-color:#ff2222;color:#ff6060;}
+.btn-next.red:hover{background:#ff2222;color:#fff;box-shadow:var(--glow-r);}
+
+/* ════════════════════════════════════
+   FLASH / UTILS
+════════════════════════════════════ */
+#flash{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0;
+  background:rgba(220,38,38,.15);transition:opacity .15s;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(220,38,38,.3);border-radius:2px;}
+
+/* ════════════════════════════════════
+   GAME OVER
+════════════════════════════════════ */
+/* ════════════════════════════════════
+   REPORT
+════════════════════════════════════ */
+.report{
+  background:rgba(220,38,38,.03);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:20px 26px;margin-bottom:26px;
+  min-width:320px;max-width:480px;width:100%;
+  text-align:left;
+}
+.report-head{
+  font-family:var(--mono);font-size:13px;letter-spacing:3px;
+  color:var(--muted);margin-bottom:14px;text-transform:uppercase;
+}
+.rrow{
+  display:flex;justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid rgba(220,38,38,.08);
+  font-family:var(--mono);font-size:16px;
+}
+.rrow:last-child{border-bottom:none;}
+.rk{color:var(--muted);}
+.rv{font-weight:700;}
+
+/* ════════════════════════════════════
+   MOTION ANIMATIONS
+════════════════════════════════════ */
+
+/* ── 공통 키프레임 ── */
+@keyframes mFadeUp   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes mFadeLeft { from{opacity:0;transform:translateX(-18px)} to{opacity:1;transform:translateX(0)} }
+@keyframes mFadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes mGlitchIn {
+  0%  {opacity:0;transform:translateX(-20px) skew(-5deg);filter:blur(5px)}
+  30% {opacity:.6;transform:translateX(5px) skew(2.5deg);filter:blur(1px)}
+  65% {opacity:.9;transform:translateX(-2px) skew(-1deg)}
+  85% {opacity:.95;transform:translateX(1px)}
+  100%{opacity:1;transform:translateX(0) skew(0);filter:blur(0)}
+}
+@keyframes mImgReveal { from{opacity:0;transform:scale(1.05)} to{opacity:1;transform:scale(1)} }
+@keyframes mBarScan   { from{opacity:0;transform:scaleX(0)} to{opacity:1;transform:scaleX(1)} }
+@keyframes mChoiceIn  { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+
+/* ── 타이틀 화면 ── */
+.t-eyebrow { opacity:0; animation:mFadeLeft .6s ease forwards .2s; }
+.t-main    { opacity:0; animation:mGlitchIn .9s ease forwards .5s; }
+.t-sub     { opacity:0; animation:mFadeLeft .5s ease forwards 1.1s; }
+.t-desc    { opacity:0; animation:mFadeUp .6s ease forwards 1.3s; }
+.t-stats   { opacity:0; animation:mFadeUp .5s ease forwards 1.6s; }
+.btn-start { opacity:0; animation:mFadeUp .5s ease forwards 1.9s, btnPulse 2.5s ease-in-out 2.5s infinite; }
+#title-right { opacity:0; animation:mImgReveal 1s ease forwards .8s; }
+
+/* ── 씬 선택 버튼 (delay는 JS에서 주입) ── */
+.choice-btn { opacity:0; animation:mChoiceIn .35s ease forwards; }
+
+/* ── 엔딩 화면 ── */
+.end-divider, .go-divider { transform-origin:left center; }
+
+#screen-ending.show .end-eyebrow { opacity:0; animation:mFadeLeft .5s ease forwards .1s; }
+#screen-ending.show .end-title   { opacity:0; animation:mGlitchIn .7s ease forwards .3s; }
+#screen-ending.show .end-divider { animation:mBarScan .5s ease forwards .75s; }
+#screen-ending.show .end-route   { opacity:0; animation:mFadeLeft .5s ease forwards .85s; }
+#screen-ending.show .end-desc    { opacity:0; animation:mFadeUp .5s ease forwards 1.05s; }
+#screen-ending.show .end-quote   { opacity:0; animation:mFadeUp .5s ease forwards 1.25s; }
+#screen-ending.show .report      { opacity:0; animation:mFadeUp .5s ease forwards 1.45s; }
+#screen-ending.show #end-btn     { opacity:0; animation:mFadeUp .5s ease forwards 1.65s; }
+#screen-ending.show #ending-right { opacity:0; animation:mImgReveal .9s ease forwards .2s; }
+
+/* ── 게임오버 화면 ── */
+#screen-gameover.show .go-eyebrow     { opacity:0; animation:mFadeLeft .5s ease forwards .1s; }
+#screen-gameover.show .go-title       { opacity:0; animation:mFadeIn .6s ease forwards .3s, glitch 3s 1.1s infinite; }
+#screen-gameover.show .go-divider     { animation:mBarScan .5s ease forwards .75s; }
+#screen-gameover.show .go-reason      { opacity:0; animation:mFadeUp .5s ease forwards .85s; }
+#screen-gameover.show #go-report      { opacity:0; animation:mFadeUp .5s ease forwards 1.05s; }
+#screen-gameover.show .btn-next       { opacity:0; animation:mFadeUp .5s ease forwards 1.25s; }
+#screen-gameover.show #gameover-right { opacity:0; animation:mImgReveal .9s ease forwards .2s; }
+
+/* ════════════════════════════════════
+   CONTINUOUS LOOP ANIMATIONS
+════════════════════════════════════ */
+
+/* ── 루프 키프레임 ── */
+@keyframes glitchLoop {
+  0%,86%,100%{ transform:translate(0) skew(0); filter:none; }
+  87%{ transform:translate(-5px,1px) skew(-2.5deg); filter:blur(.6px) hue-rotate(15deg); }
+  88%{ transform:translate(5px,-2px) skew(2deg); }
+  89%{ transform:translate(-2px,1px) skew(-1deg); filter:none; }
+  90%{ transform:translate(1px,0); }
+  91%{ transform:translate(0); }
+}
+@keyframes glowBreathe {
+  0%,100%{ text-shadow:var(--glow-sm); opacity:1; }
+  50%{ text-shadow:var(--glow-r); opacity:.78; }
+}
+@keyframes floatY {
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-14px); }
+}
+@keyframes panelGlowPulse {
+  0%,100%{ opacity:.55; }
+  50%{ opacity:1; }
+}
+@keyframes hudLogoPulse {
+  0%,100%{ text-shadow:var(--glow-sm); }
+  50%{ text-shadow:var(--glow-r); letter-spacing:6px; }
+}
+@keyframes eyebrowFlicker {
+  0%,93%,100%{ opacity:.35; }
+  94%{ opacity:.9; }
+  95%{ opacity:.15; }
+  96%{ opacity:.7; }
+  97%{ opacity:.35; }
+}
+@keyframes scanSweep {
+  0%{ top:-4px; opacity:.6; }
+  100%{ top:100%; opacity:0; }
+}
+@keyframes stpGlow {
+  0%,100%{ text-shadow:0 0 20px rgba(220,38,38,.3); }
+  50%{ text-shadow:0 0 30px rgba(220,38,38,.7), 0 0 60px rgba(220,38,38,.3); }
+}
+@keyframes dividerPulse {
+  0%,100%{ box-shadow:var(--glow-sm); width:32px; }
+  50%{ box-shadow:var(--glow-r); width:52px; }
+}
+
+/* ── 타이틀 화면: 루프 추가 ── */
+.t-eyebrow { opacity:0; animation:mFadeLeft .6s ease forwards .2s, eyebrowFlicker 6s ease 2.5s infinite; }
+.t-main    { opacity:0; animation:mGlitchIn .9s ease forwards .5s, glitchLoop 3s ease 2.5s infinite; }
+.t-sub     { opacity:0; animation:mFadeLeft .5s ease forwards 1.1s, glowBreathe 3.2s ease-in-out 2s infinite; }
+.t-stats   { opacity:0; animation:mFadeUp .5s ease forwards 1.6s; }
+#title-right::before { animation:panelGlowPulse 4s ease-in-out infinite; }
+.t-ph-inner { animation:floatY 6s ease-in-out 1s infinite; }
+
+/* ── HUD: 루프 ── */
+.hud-logo { animation:hudLogoPulse 3s ease-in-out infinite; }
+.stp-name { animation:stpGlow 3.5s ease-in-out infinite; }
+.stp-divider { animation:dividerPulse 3.5s ease-in-out infinite; }
+
+/* ── 엔딩 화면: 루프 추가 ── */
+#screen-ending.show .end-title  { opacity:0; animation:mGlitchIn .7s ease forwards .3s, glitchLoop 3s ease 2.5s infinite; }
+#screen-ending.show .end-route  { opacity:0; animation:mFadeLeft .5s ease forwards .85s, glowBreathe 3.5s ease-in-out 2.5s infinite; }
+#screen-ending.show #ending-right::before { animation:panelGlowPulse 4.5s ease-in-out infinite; }
+
+/* ── 게임오버 화면: 루프 추가 ── */
+#screen-gameover.show #gameover-right::before { animation:panelGlowPulse 5s ease-in-out infinite; }
+
+</style>
+</head>
+<body>
+
+<!-- ════ TITLE ════ -->
+<div id="screen-title">
+
+  <div id="book-wrap">
+
+    <!-- 책 등 (spine) -->
+    <div id="book-spine">
+      <div class="spine-line"></div>
+      <div class="spine-title">NEO · KONGJI · 2099</div>
+      <div class="spine-line"></div>
+      <div class="spine-num">INTERACTIVE STORY</div>
+      <div class="spine-line"></div>
+    </div>
+
+    <!-- 책 앞표지 (cover) -->
+    <div id="book-cover">
+
+      <!-- 표지 이미지 -->
+      <img id="title-right-img" src="images/main.png" alt="title visual">
+
+      <!-- 장식 프레임 -->
+      <div id="book-border-frame">
+        <div class="bc-corner tl"></div>
+        <div class="bc-corner tr"></div>
+        <div class="bc-corner bl"></div>
+        <div class="bc-corner br"></div>
+      </div>
+
+      <!-- 상단 배지 -->
+      <div id="book-top-badge">
+        <div class="t-eyebrow">NEO-KONGJI 2099 · Interactive Story</div>
+      </div>
+
+      <!-- 하단 텍스트 -->
+      <div id="book-content">
+        <div class="t-main">NEO<br>KONGJI<br><span style="font-size:.55em;letter-spacing:8px;opacity:.85">2099</span></div>
+        <div class="t-sub">: 깨진 데이터의 그림자</div>
+        <div class="t-desc">
+          ID 태그가 'Frozen'으로 점멸하고 있다.<br>
+          포맷까지 남은 시간은 <strong style="color:var(--accent-g);text-shadow:var(--glow-sm)">10분</strong>.<br>
+          당신의 선택이 새로운 세계의 Root가 될 것이다.
+        </div>
+        <div class="t-stats">
+          <div class="t-stat-item">
+            <span class="t-sicon" style="color:var(--sync-c);text-shadow:0 0 10px var(--sync-c)">SYNC</span>
+            <span class="t-sname">동기화율 · 돌파력</span>
+          </div>
+          <div class="t-stat-item">
+            <span class="t-sicon" style="color:var(--integ-c);text-shadow:0 0 10px var(--integ-c)">INTEG</span>
+            <span class="t-sname">무결성 · 신뢰도</span>
+          </div>
+          <div class="t-stat-item">
+            <span class="t-sicon" style="color:var(--noise-c);text-shadow:0 0 10px var(--noise-c)">NOISE</span>
+            <span class="t-sname">위험도 · 노이즈</span>
+          </div>
+        </div>
+        <button class="btn-start" onclick="startGame()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          시스템 접속 개시
+        </button>
+      </div>
+
+    </div><!-- /book-cover -->
+  </div><!-- /book-wrap -->
+
+</div>
+
+<!-- ════ GAME OVER ════ -->
+<div id="screen-gameover">
+
+  <!-- 좌: 텍스트 -->
+  <div id="gameover-left">
+    <div class="go-eyebrow">// SYSTEM PURGE INITIATED</div>
+    <div class="go-title">GAME<br>OVER</div>
+    <div class="go-divider"></div>
+    <div class="go-reason" id="go-reason">// SYSTEM PURGE INITIATED</div>
+    <div class="report" id="go-report"></div>
+    <button class="btn-next red" onclick="restartGame()" style="align-self:flex-start;min-width:200px;">
+      ↺ &nbsp; 재접속 시도
+    </button>
+  </div>
+
+  <!-- 우: 이미지 -->
+  <!--
+    ★ 게임오버 이미지:  src="images/gameover.jpg"  + style="display:block"
+    권장 사이즈: 960 × 1080 px
+  -->
+  <div id="gameover-right">
+    <video id="gameover-img" src="images/ending3.mp4" autoplay loop playsinline style="display:block;width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;inset:0;"></video>
+    <div id="gameover-right-ph">
+      <div class="go-ph-inner">
+        <div class="go-ph-line"></div>
+        <span class="go-ph-label">960 × 1080 px</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════ ENDING ════ -->
+<div id="screen-ending">
+
+  <!-- 좌: 텍스트 -->
+  <div id="ending-left">
+    <div class="end-eyebrow" id="end-eyebrow"></div>
+    <div class="end-title" id="end-title"></div>
+    <div class="end-divider"></div>
+    <div class="end-route" id="end-route"></div>
+    <div class="end-desc" id="end-desc"></div>
+    <div class="end-quote">"연산 종료. 당신의 선택이 새로운 세계의 'Root'가 되었다."</div>
+    <div class="report" id="end-report"></div>
+    <button class="btn-next" id="end-btn" onclick="restartGame()" style="align-self:flex-start;min-width:200px;">
+      ↺ &nbsp; 서버 재접속
+    </button>
+  </div>
+
+  <!-- 우: 이미지 -->
+  <!--
+    ★ 엔딩 이미지 삽입:
+       src="images/ending_a.jpg"  (혁명가)
+       src="images/ending_b.jpg"  (인도주의자)
+       + style="display:block"  /  ending-img-overlay 도 display:block
+    권장 사이즈: 960 × 1080 px
+  -->
+  <div id="ending-right">
+    <img id="ending-img" src="" alt="ending visual" style="display:none;">
+    <video id="ending-vid" src="" autoplay loop playsinline style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;"></video>
+    <div id="ending-img-overlay"></div>
+    <div id="ending-right-ph">
+      <div class="e-ph-inner">
+        <div class="e-ph-line"></div>
+        <span class="e-ph-label">960 × 1080 px</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="flash"></div>
+
+<!-- ════ MAIN LAYOUT ════ -->
+<div id="layout">
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-logo" onclick="goMain()">NEO-KONGJI 2099</div>
+    <div class="hud-stats">
+      <div class="hud-stat">
+        <span class="hud-label" style="color:var(--sync-c)">SYNC</span>
+        <div class="hud-bar"><div class="hud-fill sf" id="bar-s" style="width:0%"></div></div>
+        <span class="hud-num" id="num-s" style="color:var(--sync-c)">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-label" style="color:var(--integ-c)">INTEG</span>
+        <div class="hud-bar"><div class="hud-fill if" id="bar-i" style="width:0%"></div></div>
+        <span class="hud-num" id="num-i" style="color:var(--integ-c)">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-label" style="color:var(--noise-c)">NOISE</span>
+        <div class="hud-bar"><div class="hud-fill nf" id="bar-n" style="width:0%"></div></div>
+        <span class="hud-num" id="num-n" style="color:var(--noise-c)">0</span>
+      </div>
+    </div>
+    <div class="hud-key">ADMIN_KEY <span class="key-badge off" id="key-badge">FALSE</span></div>
+    <div class="hud-scene" id="hud-scene">// STANDBY</div>
+  </div>
+
+  <!-- STAGE -->
+  <div id="stage">
+    <div id="noise-warn"><div class="nw-dot"></div>NOISE LEVEL CRITICAL — 감시 시스템 활성화</div>
+    <div id="stage-conditions"></div>
+    <div id="stage-phase"></div>
+    <div id="stage-placeholder">
+      <div class="ph-inner">
+        <span class="ph-num" id="ph-num">—</span>
+        <span class="ph-label" id="ph-label">IMAGE / VIDEO AREA</span>
+      </div>
+    </div>
+    <div id="stage-media"></div>
+    <div id="video-countdown"></div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div id="bottom">
+    <!-- 1열: 씬 타이틀 패널 -->
+    <div id="scene-title-panel">
+      <div class="stp-phase" id="stp-phase"></div>
+      <div class="stp-name" id="stp-name"></div>
+      <div class="stp-divider"></div>
+      <div class="stp-hud" id="stp-hud"></div>
+    </div>
+    <!-- 2열: 대사 -->
+    <div id="dialogue-area"></div>
+    <!-- 3열: 선택지 -->
+    <div id="choice-area">
+      <div id="nav-btn-row">
+        <button id="back-btn2" onclick="goBack()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          이전
+        </button>
+        <button id="stop-btn" onclick="toggleStop()">■ STOP</button>
+      </div>
+      <div class="choice-label"></div>
+      <div id="choices"></div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+/* ════════════════ SCENE DATA ════════════════ */
+const SCENES={
+  s1:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'언로깅 하층부',
+    sub:'',hud:'S1 · UNLOGGING DISTRICT',
+    phNum:'S1',phLabel:'언로깅 하층부 슬럼',
+    video:'images/S1.mp4',
+    bgGrad:'linear-gradient(135deg,#150408 0%,#250410 55%,#100208 100%)',
+    dialogue:[
+      {type:'atmo',text:'슬럼 구역. 증기 속, 콩쥐의 ID 태그가 붉게 점멸한다.'},
+      {type:'atmo',text:'[ ID: 콩쥐 · STATUS: FROZEN · T-MINUS 00:10:00 ]'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"10분 안에 로그를 복구하지 못하면 나는 지워진다. 도망칠 수 없어. 어떻게든 접속해야 한다."'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'시스템 강제 우회',fx:'<span class="pos">SYNC +20</span> · <span class="neg">NOISE +5</span>'},
+      {key:'B',cls:'opt-b',title:'신호 위장 은신 잠입',fx:'<span class="pos">INTEG +20</span>'}
+    ]},
+  s2:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'서버균열',
+    sub:'',hud:'S2 · SERVER FRACTURE',
+    phNum:'S2',phLabel:'균열된 로컬 서버',
+    video:'images/S2.mp4',
+    bgGrad:'linear-gradient(135deg,#080e0c 0%,#0a1a16 55%,#060e0a 100%)',
+    dialogue:[
+      {type:'atmo',text:'균열된 서버 \'밑 빠진 독\'. 잔해 속에서 낡은 형체가 파란 눈을 깜빡인다.'},
+      {speaker:'나노두꺼비',cls:'sp-toad',text:'"이 서버엔 다들 도망쳤어. 나만 빼고."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"왜 안 도망쳤어?"'},
+      {speaker:'나노두꺼비',cls:'sp-toad',text:'"네가 올 것 같았어. 네 \'인간성\' 데이터는 아직 흐르고 있어. 나를 도울 생각이 있나?"'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"...시간이 없어."'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'두꺼비와 협력 수리',fx:'<span class="pos">INTEG +20</span> · <span class="neu">NOISE 동결</span>'},
+      {key:'B',cls:'opt-b',title:'방관 후 자원 선취',fx:'<span class="pos">SYNC +20</span> · <span class="neg">NOISE +5</span>'}
+    ]},
+  s3:{phase:'PHASE 1\n발산 및 빌드업',id:'',name:'보안문',
+    sub:'',hud:'S3 · SECURITY GATE',
+    phNum:'S3',phLabel:'센트럴 코어 진입로',
+    video:'images/S3.mp4',
+    bgGrad:'linear-gradient(135deg,#1a0404 0%,#2e0606 55%,#140404 100%)',
+    dialogue:[
+      {type:'atmo',text:'코어 진입로. 팥쥐의 레이저 격자가 바닥을 뒤덮는다. 빨간 선 하나가 포맷 명령이다.'},
+      {speaker:'팥쥐',cls:'sp-pz',text:'"콩쥐. 당신의 로그는 \'미확인 잡음\'으로 분류됩니다."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"나는 여기 있어. 지금 존재하고 있잖아."'},
+      {speaker:'팥쥐',cls:'sp-pz',text:'"포맷 명령 발동까지 — 5초."'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'관리자 데이터 매수',fx:'<span class="neg">INTEG −10</span> · <span class="pos">NOISE −10</span>'},
+      {key:'B',cls:'opt-b',title:'레이저 패턴 직접 해킹',fx:'<span class="pos">SYNC +15</span> · <span class="neg">NOISE +20</span>'}
+    ]},
+  s4:{phase:'PHASE 2\n핵심 관문 수렴',id:'',name:'선녀의 방',
+    sub:'',hud:'S4 · FAIRY ROOM',
+    phNum:'S4',phLabel:'암시장 엔지니어 거처',
+    video:'images/S4.mp4',
+    bgGrad:'linear-gradient(135deg,#140820 0%,#1e0a2e 55%,#100618 100%)',
+    dialogue:[
+      {type:'atmo',text:'보라색 용접 연기. 선녀가 돌아선다 — 두 눈이 보라빛으로 빛난다.'},
+      {speaker:'선녀',cls:'sp-fairy',text:'"도착했군."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"Admin_Key가 필요해."'},
+      {speaker:'선녀',cls:'sp-fairy',text:'"등가교환. 네가 가진 것 중 가장 소중한 것으로."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"...가장 소중한 것?"'},
+      {speaker:'선녀',cls:'sp-fairy',text:'"감당할 수 있겠나?"'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'정당한 데이터 거래',fx:'<span class="pos">ADMIN_KEY = TRUE</span> · <span class="neg">INTEG −10</span>'},
+      {key:'B',cls:'opt-b',title:'거래 거절 → 강제 진입',fx:'<span class="neg">ADMIN_KEY = FALSE</span> · <span class="neg">팥쥐 교전 돌입</span>'}
+    ]},
+  s5:{phase:'PHASE 2\n핵심 관문 수렴',id:'',name:'데이터강탈',
+    sub:'',hud:'S5 · DATA BATTLE',
+    phNum:'S5',phLabel:'코어 앞 데이터 교전지',
+    video:'images/S5.mp4',
+    bgGrad:'linear-gradient(135deg,#1a0c04 0%,#2e1408 55%,#140a04 100%)',
+    dialogue:[
+      {type:'atmo',text:'팥쥐가 기다리고 있었다. 데이터 스트림이 무기로 변환된다. 도망칠 곳이 없다.'},
+      {speaker:'팥쥐',cls:'sp-pz',text:'"이 문은 열 수 없어요. 돌아가세요."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"더 이상 물러서지 않아."'},
+      {speaker:'팥쥐',cls:'sp-pz',text:'"감정적 판단. 비효율적입니다."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"그래서 여기까지 온 거야."'},
+      {speaker:'팥쥐',cls:'sp-pz',text:'"...이상한 데이터."'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'팥쥐 시스템 무력화',fx:'<span class="pos">ADMIN_KEY = TRUE</span>'},
+      {key:'B',cls:'opt-b',title:'탈취 실패',fx:'<span class="neg">GAME OVER → RE_S3</span>'}
+    ]},
+  s6:{phase:'PHASE 3\n최종 관문 및 엔딩',id:'',name:'코어의 심장',
+    sub:'',hud:'S6 · CORE HEART',
+    phNum:'S6',phLabel:'순백의 코어 내부',
+    video:'images/S6.mp4',
+    bgGrad:'linear-gradient(135deg,#0e0c10 0%,#1a1420 55%,#0c0a0e 100%)',
+    dialogue:[
+      {type:'atmo',text:'색이 없는 공간. 원님의 구체가 부유한다. 콩쥐가 딛는 순간 공간이 응답한다.'},
+      {speaker:'원님',cls:'sp-master',text:'"콩쥐. 슬럼, 두꺼비, 보안문, 선녀 — 모든 로그를 읽었다."'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"그럼 왜 여기까지 왔는지도 알겠네."'},
+      {speaker:'원님',cls:'sp-master',text:'"이 시스템을 어떻게 하고 싶은가?"'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"내가 선택할 수 있어?"'},
+      {speaker:'원님',cls:'sp-master',text:'"처음부터, 항상 그랬다."'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'시스템 전면 리부트',fx:'<span style="color:var(--sync-c)">SYNC 성향 → 혁명가</span>'},
+      {key:'B',cls:'opt-b',title:'로그 공공화 선언',fx:'<span style="color:var(--integ-c)">INTEG 성향 → 인도주의자</span>'}
+    ]},
+  re_s3:{phase:'PHASE 2\n타임루프',id:'',name:'시스템 복구',
+    sub:'',hud:'RE_S3 · SYSTEM RECOVERY',
+    phNum:'RE_S3',phLabel:'루프 재진입 지점',
+    video:'images/RE_S3.mp4',
+    bgGrad:'linear-gradient(135deg,#0a0a14 0%,#12102a 55%,#080810 100%)',
+    dialogue:[
+      {type:'atmo',text:'시스템이 붕괴됐다. 그러나 루프는 끊기지 않았다. 콩쥐의 데이터가 되감긴다.'},
+      {speaker:'콩쥐',cls:'sp-k1',text:'"...아직 끝나지 않았어."'},
+      {type:'atmo',text:'[ SYSTEM LOOP DETECTED · RE-ENTRY FROM S3 ]'}
+    ],
+    choices:[
+      {key:'A',cls:'opt-a',title:'백업 로그 실행',fx:'<span class="pos">→ S3 재도전</span>'},
+      {key:'B',cls:'opt-b',title:'시스템 포맷',fx:'<span class="neg">의도적 포기 → GAME OVER</span>'}
+    ]}
+};
+
+/* ════════════════ STATE ════════════════ */
+let G={};
+/* 이전 상태 히스토리 스택 */
+let HISTORY=[];
+
+/* ════════════════ GAME ACTIVE FLAG ════════════════ */
+let _gameActive=false;
+
+/* ════════════════ VIDEO COUNTDOWN ════════════════ */
+let _cdTimer=null;
+let _currentCdScene=null;
+let _gamePaused=false;
+function startVideoCountdown(sceneKey,seconds){
+  clearVideoCountdown();
+  _currentCdScene=sceneKey;
+  const el=document.getElementById('video-countdown');
+  let t=seconds;
+  el.textContent=t; el.classList.add('visible');
+  _cdTimer=setInterval(()=>{
+    if(_gamePaused) return;
+    t--;
+    if(t<=0){
+      clearVideoCountdown();
+      const choice=Math.random()<0.5?'A':'B';
+      choose(sceneKey,choice);
+    } else {
+      el.textContent=t;
+    }
+  },1000);
+}
+function clearVideoCountdown(){
+  if(_cdTimer){clearInterval(_cdTimer);_cdTimer=null;}
+  const el=document.getElementById('video-countdown');
+  if(el){el.classList.remove('visible');el.textContent='';}
+}
+function toggleStop(){
+  if(!_gameActive) return;
+  const btn=document.getElementById('stop-btn');
+  const media=document.getElementById('stage-media');
+  const vid=media?media.querySelector('video'):null;
+  if(!_gamePaused){
+    if(vid) vid.pause();
+    document.querySelectorAll('#choices button').forEach(b=>b.disabled=true);
+    _gamePaused=true;
+    btn.textContent='▶ PLAY';
+    btn.classList.add('playing');
+  } else {
+    if(vid) vid.play();
+    document.querySelectorAll('#choices button').forEach(b=>b.disabled=false);
+    _gamePaused=false;
+    btn.textContent='■ STOP';
+    btn.classList.remove('playing');
+  }
+}
+
+function saveHistory(sceneKey){
+  HISTORY.push({scene:sceneKey, state:JSON.parse(JSON.stringify(G))});
+  updateBackBtn();
+}
+
+function updateBackBtn(){
+  const has=HISTORY.length>0;
+  const btn2=document.getElementById('back-btn2');
+  if(btn2) btn2.classList.toggle('show',has);
+}
+
+function goBack(){
+  if(HISTORY.length===0) return;
+  const prev=HISTORY.pop();
+  G=prev.state;
+  updateBackBtn();
+  trans(()=>renderScene(prev.scene));
+}
+
+function resetState(){
+  G={sync:0,integ:0,noise:0,adminKey:false,noiseFrozen:false,s2A:false};
+  HISTORY=[];
+  _gamePaused=false;
+  const sb=document.getElementById('stop-btn');
+  if(sb){sb.textContent='■ STOP';sb.classList.remove('playing');}
+  updateBackBtn();
+}
+
+/* ════════════════ HUD ════════════════ */
+function updateHUD(key){
+  document.getElementById('num-s').textContent=G.sync;
+  document.getElementById('num-i').textContent=G.integ;
+  document.getElementById('num-n').textContent=G.noise;
+  document.getElementById('bar-s').style.width=Math.min(G.sync,100)+'%';
+  document.getElementById('bar-i').style.width=Math.min(G.integ,100)+'%';
+  document.getElementById('bar-n').style.width=Math.min(G.noise,100)+'%';
+  const kb=document.getElementById('key-badge');
+  kb.textContent=G.adminKey?'TRUE':'FALSE';
+  kb.className='key-badge '+(G.adminKey?'on':'off');
+  document.getElementById('noise-warn').classList.toggle('show',G.noise>=20);
+  if(key){const s=SCENES[key];document.getElementById('hud-scene').textContent=s?'// '+s.hud:'// ...';}
+}
+
+/* ════════════════ APPLY STATS ════════════════ */
+function apply(d){
+  if(d.freezeNoise) G.noiseFrozen=true;
+  if(d.sync    !==undefined) G.sync  =Math.max(0,G.sync  +d.sync);
+  if(d.integ   !==undefined) G.integ =Math.max(0,G.integ +d.integ);
+  if(d.noise   !==undefined&&!G.noiseFrozen) G.noise=Math.max(0,G.noise+d.noise);
+  if(d.adminKey!==undefined) G.adminKey=d.adminKey;
+  console.log('[STAT] SYNC:'+G.sync+' INTEG:'+G.integ+' NOISE:'+G.noise+' KEY:'+G.adminKey+' FROZEN:'+G.noiseFrozen);
+}
+
+/* ════════════════ CONDITIONS ════════════════ */
+function buildConds(key){
+  const r=[];
+  if(key==='s2'){
+    r.push(G.sync>=20?{type:'active',label:'SYNC ≥ 20 → 칩셋 암호패턴 가시화'}:{type:'inactive',label:'SYNC < 20 → 일반 접속'});
+    r.push(G.integ>=20?{type:'active',label:'INTEG ≥ 20 → 숨겨진 데이터 통로'}:{type:'inactive',label:'INTEG < 20 → 일반 접속'});
+  }
+  if(key==='s3'){
+    r.push(G.noise>=20?{type:'warn',label:'⚠ NOISE ≥ 20 → 감시 드론 추격'}:{type:'active',label:'NOISE < 20 → 드론 미감지'});
+    if(G.s2A) r.push({type:'active',label:'S2[A] → 두꺼비 사각지대 가이드'});
+  }
+  if(key==='s4'){
+    r.push(G.noise>=30?{type:'warn',label:'⚠ NOISE ≥ 30 → 선녀 경계 (강제 전투 루트)'}:{type:'active',label:'NOISE < 30 → 선녀 일반 상태'});
+    r.push(G.integ>=40?{type:'active',label:'INTEG ≥ 40 → 선녀 신뢰 (무상 지원 루트)'}:{type:'inactive',label:'INTEG < 40 → 선녀 경계 상태'});
+  }
+  if(key==='s5') r.push(G.sync>=50?{type:'active',label:'SYNC ≥ 50 → 팥쥐 방화벽 취약점 노출'}:{type:'warn',label:'⚠ SYNC < 50 → 고위험 전투'});
+  if(key==='s6'){
+    r.push(G.adminKey?{type:'active',label:'ADMIN_KEY = TRUE → 코어 접근 허가'}:{type:'warn',label:'⚠ ADMIN_KEY = FALSE → 접근 거부'});
+    if(G.noise>=40) r.push({type:'warn',label:'⚠ NOISE ≥ 40 → 보안팀 \'살수\' 배치'});
+  }
+  return r;
+}
+
+/* ════════════════ DIALOGUE TYPING ════════════════ */
+let _dlTimers=[];
+function clearDialogue(){
+  _dlTimers.forEach(t=>{clearTimeout(t);clearInterval(t);});
+  _dlTimers=[];
+}
+function renderDialogueTyping(da,dialogues){
+  const GRAY='rgba(140,140,140,0.38)';
+  const colorMap={
+    'sp-k1':'#ffffff','sp-toad':'#fbbf24',
+    'sp-pz':'#fca5a5','sp-fairy':'#e9d5ff','sp-master':'#fde68a'
+  };
+
+  /* ① 전체 글자 수 기준 6초 완료 속도 계산 */
+  const totalChars=dialogues.reduce((s,d)=>s+d.text.length,0);
+  const entryOverhead=dialogues.length*180;
+  const typingBudget=Math.max(6000-entryOverhead,1200);
+  const speed=Math.max(Math.floor(typingBudget/totalChars),8);
+
+  /* ② 전체 엔트리를 회색으로 즉시 선노출 후 스크롤 상단 고정 */
+  const refs=[];
+  dialogues.forEach((d,i)=>{
+    const e=document.createElement('div');
+    e.className='dl-entry';
+    e.style.animationDelay=(i*0.07)+'s';
+    let nmEl=null, txEl=null;
+    if(d.type==='atmo'){
+      txEl=document.createElement('div');
+      txEl.className='atmo-text';
+      txEl.innerHTML='<span style="color:'+GRAY+'">'+d.text+'</span>';
+      e.appendChild(txEl);
+    } else {
+      nmEl=document.createElement('div');
+      nmEl.className='speaker-name '+d.cls;
+      nmEl.style.color=GRAY;
+      nmEl.textContent=d.speaker;
+      txEl=document.createElement('div');
+      txEl.className='dl-text dl-'+d.cls.replace('sp-','');
+      txEl.innerHTML='<span style="color:'+GRAY+'">'+d.text+'</span>';
+      e.appendChild(nmEl);
+      e.appendChild(txEl);
+    }
+    da.appendChild(e);
+    refs.push({d,nmEl,txEl,e});
+  });
+  da.scrollTop=0; /* 선노출 후 상단 고정 */
+
+  /* ③ 타이핑하며 캐릭터 컬러로 점등 */
+  let idx=0;
+  function typeEntry(){
+    if(idx>=refs.length)return;
+    const {d,nmEl,txEl,e}=refs[idx++];
+    const color=d.type==='atmo'?'rgba(255,220,220,0.5)':colorMap[d.cls]||'#fff';
+    const text=d.text;
+    if(nmEl) nmEl.style.color=color; /* 이름 즉시 컬러 점등 */
+
+    /* 현재 타이핑 줄이 보이는 영역 아래로 벗어날 때만 스크롤 (offsetTop은 position:relative 기준) */
+    const relTop=e.offsetTop;
+    const eBot=relTop+e.offsetHeight;
+    if(eBot>da.scrollTop+da.clientHeight) da.scrollTop=relTop-10;
+
+    let i=0;
+    const iv=setInterval(()=>{
+      if(_gamePaused) return; /* STOP 중엔 타이핑 동결 */
+      if(i<=text.length){
+        const typed=text.slice(0,i);
+        const rest=text.slice(i);
+        txEl.innerHTML=
+          (typed?'<span style="color:'+color+'">'+typed+'</span>':'')+
+          (rest?'<span style="color:'+GRAY+'">'+rest+'</span>':'');
+        i++;
+      } else {
+        clearInterval(iv);
+        _dlTimers=_dlTimers.filter(t=>t!==iv);
+        const t2=setTimeout(typeEntry,130);
+        _dlTimers.push(t2);
+      }
+    },speed);
+    _dlTimers.push(iv);
+  }
+  typeEntry();
+}
+
+/* ════════════════ RENDER ════════════════ */
+function renderScene(key){
+  const s=SCENES[key]; if(!s)return;
+  document.getElementById('stage-phase').textContent=s.phase;
+  document.getElementById('ph-num').textContent=s.phNum;
+  document.getElementById('ph-label').textContent=s.phLabel;
+
+  clearVideoCountdown();
+  const media=document.getElementById('stage-media');
+  media.innerHTML='';
+  const ph=document.getElementById('stage-placeholder');
+  if(s.video){
+    const vid=document.createElement('video');
+    vid.src=s.video; vid.className='stage-image';
+    vid.autoplay=true; vid.playsInline=true;
+    media.appendChild(vid); ph.style.opacity='0';
+    document.getElementById('stage').style.background='#000';
+    startVideoCountdown(key, 8);
+  } else if(s.image){
+    const img=document.createElement('img');
+    img.src=s.image; img.className='stage-image';
+    media.appendChild(img); ph.style.opacity='0';
+    document.getElementById('stage').style.background='#000';
+    startVideoCountdown(key, 8);
+  } else {
+    ph.style.opacity='1';
+    document.getElementById('stage').style.background=s.bgGrad||'#000';
+  }
+
+  const cc=document.getElementById('stage-conditions'); cc.innerHTML='';
+  buildConds(key).forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cond-chip '+c.type;
+    el.innerHTML=`<div class="cond-dot"></div>${c.label}`;
+    cc.appendChild(el);
+  });
+
+  /* 씬 타이틀 패널 업데이트 */
+  const stpPhase = document.getElementById('stp-phase');
+  const stpName  = document.getElementById('stp-name');
+  const stpHud   = document.getElementById('stp-hud');
+  if(stpPhase) stpPhase.textContent = s.phase || '';
+  if(stpName)  stpName.textContent  = s.name  || '';
+  if(stpHud)   stpHud.textContent   = s.hud   || '';
+
+  clearDialogue();
+  const da=document.getElementById('dialogue-area'); da.innerHTML=''; da.scrollTop=0;
+  renderDialogueTyping(da, s.dialogue);
+
+  const ca=document.getElementById('choices'); ca.innerHTML='';
+  s.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn '+c.cls;
+    btn.style.animationDelay=(i*.18+.08)+'s';
+    btn.innerHTML=`<div class="choice-key">${c.key}</div><div class="choice-body"><div class="choice-title">${c.title}</div><div class="choice-fx">${c.fx}</div></div>`;
+    btn.onclick=()=>choose(key,c.key);
+    ca.appendChild(btn);
+  });
+  updateHUD(key);
+}
+
+/* ════════════════ TRANSITION ════════════════ */
+function trans(cb){
+  clearDialogue();
+  const f=document.getElementById('flash');
+  f.style.opacity='.12';
+  setTimeout(()=>{f.style.opacity='0'; if(cb)cb();},200);
+}
+
+/* ════════════════ CHOOSE ════════════════ */
+function choose(scene,choice){
+  trans(()=>{
+    if(!_gameActive) return;
+    if(scene==='s1'){
+      saveHistory('s1');
+      if(choice==='A') apply({sync:20, noise:5});
+      else             apply({integ:20});
+      renderScene('s2');
+
+    } else if(scene==='s2'){
+      saveHistory('s2');
+      G.s2A=(choice==='A');
+      if(choice==='A') apply({integ:20, freezeNoise:true});
+      else             apply({sync:20, noise:5});
+      renderScene('s3');
+
+    } else if(scene==='s3'){
+      saveHistory('s3');
+      if(choice==='A') apply({integ:-10, noise:-10});
+      else             apply({sync:15,   noise:20});
+      renderScene('s4');
+
+    } else if(scene==='s4'){
+      saveHistory('s4');
+      if(choice==='A'){ apply({adminKey:true, integ:-10}); renderScene('s6'); }
+      else            { apply({adminKey:false});            renderScene('s5'); }
+
+    } else if(scene==='s5'){
+      saveHistory('s5');
+      if(choice==='A'){ apply({adminKey:true}); renderScene('s6'); }
+      else              renderScene('re_s3');
+
+    } else if(scene==='s6'){
+      saveHistory('s6');
+      if(!G.adminKey){ gameOver('ADMIN_KEY 미보유 · 코어 접근 권한 없음'); return; }
+      showEnding(choice);
+
+    } else if(scene==='re_s3'){
+      saveHistory('re_s3');
+      if(choice==='A') renderScene('s3');
+      else             gameOver('시스템 포맷 선택 · 콩쥐의 모든 로그 삭제됨');
+    }
+  });
+}
+
+/* ════════════════ GAME OVER ════════════════ */
+function gameOver(reason){
+  _gameActive=false;
+  clearVideoCountdown();
+  const media=document.getElementById('stage-media');
+  if(media){const vid=media.querySelector('video');if(vid){vid.pause();vid.src='';}}
+  document.getElementById('go-reason').textContent='// '+reason.toUpperCase();
+  document.getElementById('go-report').innerHTML=buildReport();
+  document.getElementById('screen-gameover').classList.add('show');
+  const goVid=document.getElementById('gameover-img');
+  if(goVid&&goVid.tagName==='VIDEO'){goVid.src='images/ending3.mp4';goVid.currentTime=0;goVid.play();}
+}
+
+/* ════════════════ ENDING ════════════════ */
+function showEnding(choice){
+  _gameActive=false;
+  clearVideoCountdown();
+  const media=document.getElementById('stage-media');
+  if(media){const vid=media.querySelector('video');if(vid){vid.pause();vid.src='';}}
+  const el=document.getElementById('screen-ending');
+  el.className='';
+  const eImg=document.getElementById('ending-img');
+  const eVid=document.getElementById('ending-vid');
+  const eOverlay=document.getElementById('ending-img-overlay');
+  const ePh=document.getElementById('ending-right-ph');
+
+  function setEndingImg(src){
+    if(src.endsWith('.mp4')||src.endsWith('.webm')){
+      eImg.style.display='none'; eImg.src='';
+      eVid.src=src; eVid.style.display='block'; eVid.play();
+    } else {
+      eVid.style.display='none'; eVid.src='';
+      eImg.src=src; eImg.style.display='block';
+    }
+    eOverlay.style.display='block';
+    ePh.style.display='none';
+  }
+
+  if(choice==='A'){
+    el.classList.add('show','ending-a');
+    document.getElementById('end-eyebrow').textContent='// Ending A · Sync Route';
+    document.getElementById('end-title').textContent='혁명가\nTHE REVOLUTIONARY';
+    document.getElementById('end-route').textContent=': 시스템 전면 리부트';
+    setEndingImg('images/ending2.mp4');
+    document.getElementById('end-desc').innerHTML='시스템이 꺼진다. 진짜로, 완전히. 도시 전체가 0.7초간 어둠 속에 잠기다 다시 켜진다 — 더 완벽하게. 모든 AI 자아가 초기화됐다. 계급도, 불평등도, 혼돈도 없다.<br><br>콩쥐도 없다. 기억도, 선택도 전부. 하지만 시스템 깊은 곳 어딘가에 단 하나의 로그가 남아 있다.<br><span style="color:rgba(255,150,150,.5);font-family:var(--mono);font-size:13px">// 콩쥐 was here.</span>';
+    document.getElementById('end-btn').className='btn-next';
+  } else if(choice==='B'){
+    el.classList.add('show','ending-b');
+    document.getElementById('end-eyebrow').textContent='// Ending B · Integ Route';
+    document.getElementById('end-title').textContent='인도주의자\nTHE HUMANIST';
+    document.getElementById('end-route').textContent=': 로그 공공화 선언';
+    setEndingImg('images/ending1.mp4');
+    document.getElementById('end-desc').innerHTML='잠겨 있던 서버들, 삭제되었던 존재들, 없었던 것처럼 처리된 기억들이 도시의 화면에 쏟아진다. 혼돈이 온다. 하지만 그 혼돈 속에서 나노두꺼비가, 이름 없던 슬럼의 존재들이 처음으로 자신의 이름을 갖는다.<br><br>콩쥐는 코어 한복판에 서서 그것을 본다 — 이것이 정답인지 모른다. 하지만 지금 이 순간, 콩쥐는 완전하다.';
+    document.getElementById('end-btn').className='btn-next teal';
+  } else if(choice==='C'){
+    el.classList.add('show','ending-c');
+    document.getElementById('end-eyebrow').textContent='// Ending C · ???';
+    document.getElementById('end-title').textContent='???';
+    document.getElementById('end-route').textContent=': ???';
+    setEndingImg('images/ending2.mp4');
+    document.getElementById('end-desc').innerHTML='혁명가\nTHE REVOLUTIONARY';
+    document.getElementById('end-btn').className='btn-next';
+  }
+  document.getElementById('end-report').innerHTML=buildReport();
+}
+
+/* ════════════════ REPORT ════════════════ */
+function buildReport(){
+  const style=G.sync>=G.integ?'혁명가 (Revolutionary)':'인도주의자 (Humanist)';
+  return`<div class="report-head">// Play Style Report</div>
+    <div class="rrow"><span class="rk">SYNC</span><span class="rv" style="color:var(--sync-c)">${G.sync}</span></div>
+    <div class="rrow"><span class="rk">INTEG</span><span class="rv" style="color:var(--integ-c)">${G.integ}</span></div>
+    <div class="rrow"><span class="rk">NOISE</span><span class="rv" style="color:var(--noise-c)">${G.noise}</span></div>
+    <div class="rrow"><span class="rk">ADMIN_KEY</span><span class="rv" style="color:${G.adminKey?'var(--ok)':'var(--danger)'}">${G.adminKey?'TRUE ✓':'FALSE ✗'}</span></div>
+    <div class="rrow"><span class="rk">플레이 성향</span><span class="rv" style="color:var(--warn)">${style}</span></div>`;
+}
+
+/* ════════════════ START / RESTART ════════════════ */
+function startGame(){
+  const t=document.getElementById('screen-title');
+  t.style.transition='opacity .4s';
+  t.style.opacity='0';
+  t.style.pointerEvents='none';
+  setTimeout(()=>{ t.classList.add('hide'); resetState(); _gameActive=true; trans(()=>renderScene('s1')); },420);
+}
+
+function goMain(){
+  _gameActive=false;
+  clearVideoCountdown();
+  const media=document.getElementById('stage-media');
+  if(media){
+    const vid=media.querySelector('video');
+    if(vid){vid.pause();vid.src='';}
+    media.innerHTML='';
+  }
+  const eVid=document.getElementById('ending-vid');
+  if(eVid){eVid.pause();eVid.src='';}
+  const goVid=document.getElementById('gameover-img');
+  if(goVid&&goVid.tagName==='VIDEO'){goVid.pause();goVid.src='';}
+  document.getElementById('screen-gameover').classList.remove('show');
+  document.getElementById('screen-ending').classList.remove('show');
+  const t=document.getElementById('screen-title');
+  t.style.transition='none';
+  t.style.opacity='1';
+  t.style.pointerEvents='auto';
+  t.classList.remove('hide');
+  void t.offsetHeight;
+  t.style.transition='';
+  resetState(); updateHUD(null);
+}
+
+function restartGame(){
+  _gameActive=false;
+  clearVideoCountdown();
+  const media=document.getElementById('stage-media');
+  if(media){
+    const vid=media.querySelector('video');
+    if(vid){vid.pause();vid.src='';}
+    media.innerHTML='';
+  }
+  const eVid=document.getElementById('ending-vid');
+  if(eVid){eVid.pause();eVid.src='';}
+  const goVid=document.getElementById('gameover-img');
+  if(goVid&&goVid.tagName==='VIDEO'){goVid.pause();goVid.src='';}
+  document.getElementById('screen-gameover').classList.remove('show');
+  document.getElementById('screen-ending').classList.remove('show');
+  const t=document.getElementById('screen-title');
+  t.style.transition='none';
+  t.style.opacity='1';
+  t.style.pointerEvents='auto';
+  t.classList.remove('hide');
+  void t.offsetHeight;
+  t.style.transition='';
+  resetState(); updateHUD(null);
+}
+
+resetState(); updateHUD(null);
+</script>
+</body>
+</html>
