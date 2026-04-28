@@ -1504,6 +1504,71 @@ const SCENES={
     ]}
 };
 
+/* ════════════════ AUDIO ════════════════ */
+let _actx=null;
+function _getActx(){
+  if(!_actx){
+    _actx=new(window.AudioContext||window.webkitAudioContext)();
+  }
+  if(_actx.state==='suspended') _actx.resume();
+  return _actx;
+}
+/* 모바일: 첫 터치/클릭 시 AudioContext 언락 */
+function _unlockAudio(){
+  _getActx();
+  document.removeEventListener('touchstart',_unlockAudio,true);
+  document.removeEventListener('mousedown',_unlockAudio,true);
+}
+document.addEventListener('touchstart',_unlockAudio,true);
+document.addEventListener('mousedown',_unlockAudio,true);
+
+function _beep(freq,type,dur,vol,delay){
+  try{
+    const ctx=_getActx();
+    const t=ctx.currentTime+(delay||0);
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type=type||'sine';
+    osc.frequency.setValueAtTime(freq,t);
+    gain.gain.setValueAtTime(vol||0.18,t);
+    gain.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    osc.start(t); osc.stop(t+dur+0.01);
+  }catch(e){}
+}
+
+/* 선택지 클릭 효과 */
+function sfxClick(){
+  _beep(880,'square',0.06,0.12);
+  _beep(1100,'square',0.05,0.08,0.06);
+}
+/* 씬 전환 효과 */
+function sfxTrans(){
+  _beep(300,'sawtooth',0.04,0.10);
+  _beep(200,'sawtooth',0.07,0.07,0.04);
+  _beep(120,'sawtooth',0.09,0.05,0.10);
+}
+/* 게임 오버 효과 */
+function sfxGameOver(){
+  _beep(220,'sawtooth',0.18,0.15);
+  _beep(160,'sawtooth',0.20,0.12,0.15);
+  _beep(100,'sawtooth',0.35,0.10,0.30);
+}
+/* 엔딩 효과 */
+function sfxEnding(){
+  [0,0.12,0.24].forEach((d,i)=>{
+    const freqs=[660,880,1100];
+    _beep(freqs[i],'sine',0.30,0.13,d);
+  });
+}
+/* 게임 시작 효과 */
+function sfxStart(){
+  [0,0.1,0.2,0.32].forEach((d,i)=>{
+    const freqs=[440,550,660,880];
+    _beep(freqs[i],'sine',0.20,0.12,d);
+  });
+}
+
 /* ════════════════ STATE ════════════════ */
 let G={};
 /* 이전 상태 히스토리 스택 */
@@ -1781,6 +1846,7 @@ function renderScene(key){
 
 /* ════════════════ TRANSITION ════════════════ */
 function trans(cb){
+  sfxTrans();
   clearDialogue();
   const f=document.getElementById('flash');
   f.style.opacity='.12';
@@ -1789,6 +1855,7 @@ function trans(cb){
 
 /* ════════════════ CHOOSE ════════════════ */
 function choose(scene,choice){
+  sfxClick();
   trans(()=>{
     if(!_gameActive) return;
     if(scene==='s1'){
@@ -1835,6 +1902,7 @@ function choose(scene,choice){
 
 /* ════════════════ GAME OVER ════════════════ */
 function gameOver(reason){
+  sfxGameOver();
   _gameActive=false;
   clearVideoCountdown();
   const media=document.getElementById('stage-media');
@@ -1848,6 +1916,7 @@ function gameOver(reason){
 
 /* ════════════════ ENDING ════════════════ */
 function showEnding(choice){
+  sfxEnding();
   _gameActive=false;
   clearVideoCountdown();
   const media=document.getElementById('stage-media');
@@ -1912,6 +1981,7 @@ function buildReport(){
 
 /* ════════════════ START / RESTART ════════════════ */
 function startGame(){
+  sfxStart();
   const t=document.getElementById('screen-title');
   t.style.transition='opacity .4s';
   t.style.opacity='0';
