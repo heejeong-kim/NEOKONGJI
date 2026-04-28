@@ -1268,7 +1268,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
     권장 사이즈: 960 × 1080 px
   -->
   <div id="gameover-right">
-    <video id="gameover-img" src="images/ending3.mp4" autoplay loop playsinline muted style="display:block;width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;inset:0;"></video>
+    <video id="gameover-img" src="images/ending3.mp4" autoplay loop playsinline style="display:block;width:100%;height:100%;object-fit:cover;object-position:center;position:absolute;inset:0;"></video>
     <div id="gameover-right-ph">
       <div class="go-ph-inner">
         <div class="go-ph-line"></div>
@@ -1306,7 +1306,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
   -->
   <div id="ending-right">
     <img id="ending-img" src="" alt="ending visual" style="display:none;">
-    <video id="ending-vid" src="" autoplay loop playsinline muted style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;"></video>
+    <video id="ending-vid" src="" autoplay loop playsinline style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;"></video>
     <div id="ending-img-overlay"></div>
     <div id="ending-right-ph">
       <div class="e-ph-inner">
@@ -1797,7 +1797,7 @@ function renderScene(key){
   if(s.video){
     const vid=document.createElement('video');
     vid.src=s.video; vid.className='stage-image';
-    vid.autoplay=true; vid.playsInline=true; vid.muted=true;
+    vid.autoplay=true; vid.playsInline=true;
     media.appendChild(vid); ph.style.opacity='0';
     document.getElementById('stage').style.background='#000';
     startVideoCountdown(key, 8);
