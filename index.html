@@ -709,6 +709,7 @@
         }
 
         function playClickSound() {
+            return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             const filter = audioCtx.createBiquadFilter();
@@ -728,6 +729,7 @@
         }
 
         function playNavSound() {
+            return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -1369,11 +1371,9 @@
                 startTypingLoop();
             }
 
-            const container = document.getElementById('ui-choices');
-            container.innerHTML = '';
-            container.style.opacity = '0';
             state.choicesRendered = false;
             state.pendingChoiceRecordHistory = recordHistory;
+            renderChoices();
             document.getElementById('scroll-target').scrollTop = 0;
         }
 
@@ -1417,10 +1417,14 @@
 
         window.onload = () => {
             document.body.classList.add('is-cover');
-            /* 마우스 움직임 감지 시 커버 앰비언스 시작 — 버튼 클릭과 충돌 없음 */
-            document.getElementById('cover-screen').addEventListener('pointermove', () => {
-                if (!coverAmbienceActive) playCoverAmbience();
-            }, { once: true });
+            /* 첫 번째 사용자 인터랙션(클릭·터치·키)에서 AudioContext 활성화 후 앰비언스 시작 */
+            function startAmbienceOnFirstInteraction() {
+                audioCtx.resume().then(() => {
+                    if (!coverAmbienceActive) playCoverAmbience();
+                });
+            }
+            document.addEventListener('pointerdown', startAmbienceOnFirstInteraction, { once: true });
+            document.addEventListener('keydown',     startAmbienceOnFirstInteraction, { once: true });
         };
     </script>
 </body>
