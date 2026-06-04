@@ -343,11 +343,36 @@
 
         .scanline-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 1000; opacity: 0.1; }
 
+        /* 스탯 변동 플래시 */
+        @keyframes stat-flash-up {
+            0%   { opacity: 0; transform: translateY(0px); }
+            15%  { opacity: 1; transform: translateY(-6px); }
+            70%  { opacity: 1; transform: translateY(-14px); }
+            100% { opacity: 0; transform: translateY(-22px); }
+        }
+        @keyframes stat-value-pulse {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.45); }
+            100% { transform: scale(1); }
+        }
+        .stat-delta-popup {
+            position: absolute;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 900;
+            pointer-events: none;
+            animation: stat-flash-up 1.1s ease-out forwards;
+            z-index: 500;
+            white-space: nowrap;
+            text-shadow: 0 0 8px currentColor;
+        }
+        .stat-value.flashing { animation: stat-value-pulse 0.4s ease-out; }
+
         /* --- Cover Screen --- */
         #cover-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: url('cover.png') no-repeat center center/cover;
+            background: url('source/cover.png') no-repeat center center/cover;
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -564,6 +589,123 @@
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+        /* ── 커버 앰비언스 ── */
+        let coverAmbienceNodes = [];
+        let coverAmbienceMaster = null;
+        let coverAmbienceActive = false;
+
+        function playCoverAmbience() {
+            stopCoverAmbience();
+            coverAmbienceActive = true;
+            const t = audioCtx.currentTime;
+            const dur = 300;
+
+            coverAmbienceMaster = audioCtx.createGain();
+            coverAmbienceMaster.gain.setValueAtTime(0, t);
+            coverAmbienceMaster.gain.linearRampToValueAtTime(1.0, t + 3.5);
+            coverAmbienceMaster.connect(audioCtx.destination);
+
+            /* 1. 심층 베이스 드론 — 웅장함의 뼈대 */
+            const bassFreqs = [36, 54, 72];
+            bassFreqs.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(coverAmbienceMaster);
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.value = i === 0 ? 0.28 : 0.10;
+                osc.start(t); osc.stop(t + dur);
+                coverAmbienceNodes.push(osc);
+            });
+
+            /* 2. 디지털 패드 — 5도 적층 화음 (square → lowpass) */
+            const padFreqs = [108, 162, 216, 288];
+            padFreqs.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const filter = audioCtx.createBiquadFilter();
+                const gain = audioCtx.createGain();
+                osc.connect(filter); filter.connect(gain); gain.connect(coverAmbienceMaster);
+                osc.type = 'square';
+                osc.frequency.value = freq + (Math.random() - 0.5) * 1.5;
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(600, t);
+                filter.frequency.linearRampToValueAtTime(1400, t + 8);
+                filter.Q.value = 1.8;
+                gain.gain.value = 0.045 / (i + 1);
+                osc.start(t); osc.stop(t + dur);
+                coverAmbienceNodes.push(osc);
+            });
+
+            /* 3. 고주파 디지털 shimmer — 사이버 감성 */
+            const shimmerOsc = audioCtx.createOscillator();
+            const shimmerFilter = audioCtx.createBiquadFilter();
+            const shimmerGain = audioCtx.createGain();
+            shimmerOsc.connect(shimmerFilter); shimmerFilter.connect(shimmerGain); shimmerGain.connect(coverAmbienceMaster);
+            shimmerOsc.type = 'sawtooth';
+            shimmerOsc.frequency.value = 3240;
+            shimmerFilter.type = 'bandpass'; shimmerFilter.frequency.value = 3600; shimmerFilter.Q.value = 6;
+            shimmerGain.gain.setValueAtTime(0, t);
+            shimmerGain.gain.linearRampToValueAtTime(0.018, t + 5);
+            shimmerOsc.start(t); shimmerOsc.stop(t + dur);
+            coverAmbienceNodes.push(shimmerOsc);
+
+            /* 4. LFO → 패드 필터 변조 — 살아있는 느낌 */
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            lfo.connect(lfoGain); lfoGain.connect(shimmerFilter.frequency);
+            lfo.type = 'sine'; lfo.frequency.value = 0.18;
+            lfoGain.gain.value = 800;
+            lfo.start(t); lfo.stop(t + dur);
+            coverAmbienceNodes.push(lfo);
+
+            /* 5. 글리치 펄스 — 간헐적 디지털 노이즈 */
+            function scheduleGlitch(startAt) {
+                if (!coverAmbienceActive) return;
+                const glitch = audioCtx.createOscillator();
+                const glitchGain = audioCtx.createGain();
+                glitch.connect(glitchGain); glitchGain.connect(coverAmbienceMaster);
+                glitch.type = 'square';
+                glitch.frequency.value = 880 + Math.random() * 1760;
+                glitchGain.gain.setValueAtTime(0, startAt);
+                glitchGain.gain.linearRampToValueAtTime(0.04, startAt + 0.01);
+                glitchGain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.055);
+                glitch.start(startAt); glitch.stop(startAt + 0.06);
+                coverAmbienceNodes.push(glitch);
+                const next = startAt + 1.8 + Math.random() * 3.5;
+                if (coverAmbienceActive) setTimeout(() => scheduleGlitch(audioCtx.currentTime), (next - audioCtx.currentTime) * 1000);
+            }
+            scheduleGlitch(t + 2.5);
+
+            /* 6. 웅장한 서브 펄스 — 심장 박동 같은 저음 강조 */
+            function scheduleSubPulse(startAt) {
+                if (!coverAmbienceActive) return;
+                const sub = audioCtx.createOscillator();
+                const subGain = audioCtx.createGain();
+                sub.connect(subGain); subGain.connect(coverAmbienceMaster);
+                sub.type = 'sine'; sub.frequency.value = 42;
+                subGain.gain.setValueAtTime(0, startAt);
+                subGain.gain.linearRampToValueAtTime(0.55, startAt + 0.06);
+                subGain.gain.exponentialRampToValueAtTime(0.0001, startAt + 1.2);
+                sub.start(startAt); sub.stop(startAt + 1.3);
+                coverAmbienceNodes.push(sub);
+                const next = startAt + 3.0;
+                if (coverAmbienceActive) setTimeout(() => scheduleSubPulse(audioCtx.currentTime), (next - audioCtx.currentTime) * 1000);
+            }
+            scheduleSubPulse(t + 0.5);
+        }
+
+        function stopCoverAmbience() {
+            if (!coverAmbienceMaster) return;
+            coverAmbienceActive = false; /* 즉시 플래그 해제 — 스케줄 루프 차단 */
+            const t = audioCtx.currentTime;
+            coverAmbienceMaster.gain.cancelScheduledValues(t);
+            coverAmbienceMaster.gain.setValueAtTime(coverAmbienceMaster.gain.value, t);
+            coverAmbienceMaster.gain.linearRampToValueAtTime(0.0001, t + 0.08); /* 즉시 차단 */
+            coverAmbienceNodes.forEach(node => { try { node.stop(t + 0.1); } catch(e) {} });
+            coverAmbienceNodes = [];
+            coverAmbienceMaster = null;
+        }
+
         function playClickSound() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -647,7 +789,7 @@
 
         /* 장면별 음성 트랙 — { 장면ID: { 대사인덱스: '파일명' } } */
         const sceneVoiceTracks = {
-            'S1': { 0: 's1_01.mp3', 1: 's1_02.mp3' }
+            'S1': { 0: 'source/s1_01.mp3', 1: 'source/s1_02.mp3' }
         };
 
         let currentVoiceAudio = null;
@@ -854,12 +996,12 @@
                 showNarrativeOverlay: true,
                 narrative: '고막을 찢는 경보음이 울려 퍼지고,\n자욱한 증기 사이로 붉은 점멸등이 콩쥐의 안구를 차갑게 스캔한다.\n\n시스템 냉각수는 이미 바닥을 드러냈고,\n과열된 프로세서가 타들어 가는 비린 냄새가 하층부의 공기를 가득 채운다.',
                 dialogue: [
-                    { speaker: '시스템 AI', text: '"알린다. 사용자 \'콩쥐\'의 무결성 검증이 실패되었다. 600초 후 가용 메모리 풀 확보를 위한 강제 소거가 시작된다."', charDelay: 75, waitVoice: true, sceneImage: 'S1_01.png' },
-                    { speaker: '콩쥐', text: '"가용 메모리 확보? 내 16년 치 기억 로그를 통째로 포맷하는 걸 참 우아하게도 말하는군."', charDelay: 75, waitVoice: true, sceneImage: 'S1_02.png' },
-                    { speaker: '시스템 AI', text: '"시스템에 기록되지 않은 데이터는 물리적 점유일 뿐이다. 당신의 소멸은 논리적으로 타당하다."', sceneImage: 'S1_02.png' },
-                    { speaker: '콩쥐', text: '"그 논리, 오늘 내가 박살 내줄게. 10분이면 이 썩은 서버를 뒤집어엎고도 남는 시간이야."', sceneImage: 'S1_02.png' }
+                    { speaker: '시스템 AI', text: '"알린다. 사용자 \'콩쥐\'의 무결성 검증이 실패되었다. 600초 후 가용 메모리 풀 확보를 위한 강제 소거가 시작된다."', charDelay: 75, waitVoice: true, sceneImage: 'source/S1_01.png' },
+                    { speaker: '콩쥐', text: '"가용 메모리 확보? 내 16년 치 기억 로그를 통째로 포맷하는 걸 참 우아하게도 말하는군."', charDelay: 75, waitVoice: true, sceneImage: 'source/S1_02.png' },
+                    { speaker: '시스템 AI', text: '"시스템에 기록되지 않은 데이터는 물리적 점유일 뿐이다. 당신의 소멸은 논리적으로 타당하다."', sceneImage: 'source/S1_02.png' },
+                    { speaker: '콩쥐', text: '"그 논리, 오늘 내가 박살 내줄게. 10분이면 이 썩은 서버를 뒤집어엎고도 남는 시간이야."', sceneImage: 'source/S1_02.png' }
                 ],
-                img: 'S1.png',
+                img: 'source/S1.png',
                 choices: [
                     { type: 'A', text: '방화벽 강제 우회', delta: 'SYNC+20/NOISE+10', s: 20, i: 0, n: 10, next: 'S2' },
                     { type: 'B', text: '신호 위장 잠입', delta: 'INTEG+20/NOISE-5', s: 0, i: 20, n: -5, next: 'S2' }
@@ -874,7 +1016,7 @@
                     { speaker: '나노두꺼비', text: '"성질 급하긴. 내 깨진 하부 모듈을 수리해준다면 네 코어가 타버리기 전에 길을 열어주지. 서로의 손익이 맞지 않나?"' },
                     { speaker: '콩쥐', text: '"거래는 성립됐어. 하지만 딴생각하면 네 렌즈부터 뽑아버릴 줄 알아."' }
                 ],
-                img: 'S2.png',
+                img: 'source/S2.png',
                 choices: [
                     { type: 'A', text: '모듈 수리 협력', delta: 'INTEG+20', s: 0, i: 20, n: 0, action: () => state.helpedToad = true, next: 'S3' },
                     { type: 'B', text: '데이터 강제 탈취', delta: 'SYNC+20/NOISE+5', s: 20, i: 0, n: 5, action: () => state.helpedToad = false, next: 'S3' }
@@ -889,7 +1031,7 @@
                     { speaker: '팥쥐', text: '"이건 효율의 문제입니다. 당신의 로그는 무의미한 잡음일 뿐이에요. 포맷까지 5초 남았습니다."' },
                     { speaker: '콩쥐', text: '"잡음이 모이면 비명이 된다는 걸 똑똑히 보여줄게. 나는 여기 살아있어, 이 금속 껍데기 안에서!"' }
                 ],
-                img: 'S3.png',
+                img: 'source/S3.png',
                 choices: [
                     { type: 'A', text: '관리자 뇌물 매수', delta: 'INTEG-20/NOISE-10', s: 0, i: -20, n: -10, next: 'S4' },
                     { type: 'B', text: '제어권 직접 해킹', delta: 'SYNC+15/NOISE+15', s: 15, i: 0, n: 15, next: 'S4' }
@@ -904,7 +1046,7 @@
                     { speaker: '선녀', text: '"거래엔 대가가 따르는 법. 네 코어에 남은 마지막 \'진짜 기억\'을 내게 넘겨. 그럼 키를 주지. 텅 빈 깡통으로 살 자신은 있나?"' },
                     { speaker: '콩쥐', text: '"내 기억이 네 수집품이 되더라도, 기꺼이 내놓겠어."' }
                 ],
-                img: 'S4.png',
+                img: 'source/S4.png',
                 choices: [
                     { type: 'A', text: '기억 데이터 거래', delta: 'ADMIN_KEY=TRUE', s: 0, i: -10, n: 0, action: () => state.adminKey = true, next: 'S6' },
                     { type: 'B', text: '코어 구역 난입', delta: 'S5 진입', s: 0, i: 0, n: 10, next: 'S5' }
@@ -919,7 +1061,7 @@
                     { speaker: '팥쥐', text: '"의지는 불확실성을 낳을 뿐이에요. 저는 질서를 수호합니다."' },
                     { speaker: '콩쥐', text: '"질서라는 이름의 감옥이겠지. 비켜, 내 로그는 내가 직접 완성해."' }
                 ],
-                img: 'S5.png',
+                img: 'source/S5.png',
                 choices: [
                     { type: 'A', text: '사슬 절단 성공', delta: 'KEY 찬탈 성공', s: 20, i: 0, n: 0, action: () => state.adminKey = true, next: 'S6' },
                     { type: 'B', text: '집행 시퀀스 오류', delta: '루프 발생', s: 0, i: 0, n: 0, next: 'RE_S3' }
@@ -929,7 +1071,7 @@
                 id: 'LOOP', title: '시스템 복구', location: 'GLITCH SPACE',
                 narrative: '시야가 깨진 픽셀로 뒤덮이고 모든 소리가 기괴하게 늘어지는 저주파로 변한다. 콩쥐의 형체는 흐릿하게 무너져 내리고, 과거의 잔상들이 끝없는 데이터 루프 속에 갇혀 반복된다.',
                 dialogue: [{ speaker: '시스템', text: '"Critical Error. 사용자 \'콩쥐\'의 무결성 붕괴. 백업 지점에서 재구성을 시도하겠습니까? 주의: 반복된 복구는 영혼의 마모를 초래합니다."' }],
-                img: 'RE_S3.png',
+                img: 'source/RE_S3.png',
                 choices: [
                     { type: 'A', text: '백업 로그 로드', delta: 'S3 회귀', s: 0, i: 0, n: 10, next: 'S3' },
                     { type: 'B', text: '로그 포맷 수용', delta: '삭제 완료', s: 0, i: 0, n: 0, next: 'G_OVER' }
@@ -944,7 +1086,7 @@
                     { speaker: '원님', text: '"이제 판결의 권한은 너에게 있다. 시스템을 리부트하여 순수한 \'무\'로 돌릴 것인가, 아니면 이 비참한 진실을 모두에게 전파할 것인가."' },
                     { speaker: '콩쥐', text: '"판결이라니, 끝까지 오만한 태도군. 이제 내가 네 시뮬레이션 밖으로 나갈 차례다."' }
                 ],
-                img: 'S6.png',
+                img: 'source/S6.png',
                 choices: [
                     { type: 'A', text: '시스템 전면 리부트', delta: '혁명가', s: 0, i: 0, n: 0, next: 'END_A', cond: () => state.adminKey },
                     { type: 'B', text: '진실 전파 선언', delta: '인도주의자', s: 0, i: 0, n: 0, next: 'END_B', cond: () => state.adminKey }
@@ -954,24 +1096,65 @@
                 id: 'FIN', title: '혁명가', location: 'LOG_FINAL', 
                 narrative: '[SYSTEM LOG: 콩쥐라는 유령이 이곳을 다녀감]', 
                 dialogue: [{ speaker: '시스템 로그', text: '"콩쥐라는 유령이 이곳을 다녀감."' }],
-                img: 'END_A.png', 
+                img: 'source/END_A.png', 
                 choices: [{ type: 'R', text: '서버 재접속', delta: 'RESTART', action: () => location.reload(), next: 'S1' }] 
             },
             'END_B': { 
                 id: 'FIN', title: '인도주의자', location: 'DEMO_LOG', 
                 narrative: '이름 없던 존재들이 자신의 로그를 되찾고, 조작된 낙원의 장막이 걷힌다.', 
                 dialogue: [{ speaker: '시스템 각성', text: '"이름 없던 존재들이 자신의 로그를 되찾고, 조작된 낙원의 장막이 걷힌다."' }],
-                img: 'END_B.png',
+                img: 'source/END_B.png',
                 choices: [{ type: 'R', text: '서버 재접속', delta: 'RESTART', action: () => location.reload(), next: 'S1' }] 
             },
             'G_OVER': { 
                 id: 'DIE', title: '포맷 완료', location: 'NULL', 
                 narrative: '[FORMAT COMPLETE: 당신은 애초에 존재하지 않았습니다]', 
                 dialogue: [{ speaker: '시스템 메시지', text: '"[FORMAT COMPLETE: 당신은 애초에 존재하지 않았습니다]"' }],
-                img: 'G_OVER.png',
+                img: 'source/G_OVER.png',
                 choices: [{ type: 'R', text: '서버 재접속', delta: 'RETRY', action: () => location.reload(), next: 'S1' }] 
             }
         };
+
+        /* 스탯 변동 플래시 */
+        function flashStatDelta(statId, barId, newVal, delta) {
+            const valueEl = document.getElementById(statId);
+            const barEl = document.getElementById(barId);
+
+            /* 숫자 즉시 갱신 */
+            valueEl.innerText = newVal;
+            barEl.style.width = Math.min(newVal, 100) + '%';
+
+            /* 펄스 애니메이션 */
+            valueEl.classList.remove('flashing');
+            void valueEl.offsetWidth;
+            valueEl.classList.add('flashing');
+            setTimeout(() => valueEl.classList.remove('flashing'), 450);
+
+            if (delta === 0) return;
+
+            /* 팝업 텍스트 (+N / -N) */
+            const rect = valueEl.getBoundingClientRect();
+            const popup = document.createElement('div');
+            popup.className = 'stat-delta-popup';
+            popup.textContent = (delta > 0 ? '+' : '') + delta;
+            popup.style.color = delta > 0 ? '#00FF88' : '#FF2A00';
+            popup.style.left = rect.left + 'px';
+            popup.style.top  = rect.top  + 'px';
+            document.body.appendChild(popup);
+            popup.addEventListener('animationend', () => popup.remove());
+        }
+
+        function applyAndFlashStats(c) {
+            const ns = state.sync  + (c.s || 0);
+            const ni = state.integ + (c.i || 0);
+            const nn = state.noise + (c.n || 0);
+            flashStatDelta('ui-sync',  'bar-sync',  ns, c.s || 0);
+            flashStatDelta('ui-integ', 'bar-integ', ni, c.i || 0);
+            flashStatDelta('ui-noise', 'bar-noise', nn, c.n || 0);
+            state.sync  = ns;
+            state.integ = ni;
+            state.noise = nn;
+        }
 
         /* 화자 클래스 할당 함수 */
         function getSpeakerClass(name) {
@@ -998,9 +1181,11 @@
                 choicesRendered: false, pendingChoiceRecordHistory: true
             });
             document.body.classList.add('is-cover');
+            playCoverAmbience();
         }
 
         function startGame() {
+            stopCoverAmbience();
             document.body.classList.remove('is-cover');
             state.isPaused = false;
             updateUI();
@@ -1202,10 +1387,11 @@
                         adminKey: state.adminKey, currentScene: state.currentScene,
                         helpedToad: state.helpedToad
                     })));
-                    state.sync += c.s || 0; state.integ += c.i || 0; state.noise += c.n || 0;
+                    /* 스탯 즉시 표시 후 씬 전환 지연 */
+                    applyAndFlashStats(c);
                     if (c.action) c.action();
                     state.currentScene = c.next;
-                    updateUI();
+                    setTimeout(() => updateUI(), 800);
                 };
                 container.appendChild(item);
                 idx++;
@@ -1214,6 +1400,10 @@
 
         window.onload = () => {
             document.body.classList.add('is-cover');
+            /* 마우스 움직임 감지 시 커버 앰비언스 시작 — 버튼 클릭과 충돌 없음 */
+            document.getElementById('cover-screen').addEventListener('pointermove', () => {
+                if (!coverAmbienceActive) playCoverAmbience();
+            }, { once: true });
         };
     </script>
 </body>
