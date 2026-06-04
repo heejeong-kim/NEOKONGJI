@@ -152,6 +152,7 @@
         }
 
         #scene-image { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.65); transform-origin: center center; }
+        #scene-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 2; }
 
         /* 대사별 이미지 전환 오버레이 */
         #scene-transition-overlay {
@@ -372,7 +373,7 @@
         #cover-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: url('/source/cover.png') no-repeat center center/cover;
+            background: url('source/cover.png') no-repeat center center/cover;
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -560,7 +561,8 @@
 
     <main id="main-body">
         <section class="visual-col">
-            <img id="scene-image" src="" alt="Scene Visual">
+            <img id="scene-image" src="source/S1.png" alt="Scene Visual" style="display:none">
+            <video id="scene-video" playsinline></video>
             <div id="scene-transition-overlay"></div>
             <div id="narrative-overlay">
                 <p id="narrative-overlay-text"></p>
@@ -789,7 +791,7 @@
 
         /* 장면별 음성 트랙 — { 장면ID: { 대사인덱스: '파일명' } } */
         const sceneVoiceTracks = {
-            'S1': { 0: '/source/s1_01.mp3', 1: '/source/s1_02.mp3' }
+            'S1': { 0: 'source/s1_01.mp3', 1: 'source/s1_02.mp3' }
         };
 
         let currentVoiceAudio = null;
@@ -996,12 +998,12 @@
                 showNarrativeOverlay: true,
                 narrative: '고막을 찢는 경보음이 울려 퍼지고,\n자욱한 증기 사이로 붉은 점멸등이 콩쥐의 안구를 차갑게 스캔한다.\n\n시스템 냉각수는 이미 바닥을 드러냈고,\n과열된 프로세서가 타들어 가는 비린 냄새가 하층부의 공기를 가득 채운다.',
                 dialogue: [
-                    { speaker: '시스템 AI', text: '"알린다. 사용자 \'콩쥐\'의 무결성 검증이 실패되었다. 600초 후 가용 메모리 풀 확보를 위한 강제 소거가 시작된다."', charDelay: 75, waitVoice: true, sceneImage: '/source/S1_01.png' },
-                    { speaker: '콩쥐', text: '"가용 메모리 확보? 내 16년 치 기억 로그를 통째로 포맷하는 걸 참 우아하게도 말하는군."', charDelay: 75, waitVoice: true, sceneImage: '/source/S1_02.png' },
-                    { speaker: '시스템 AI', text: '"시스템에 기록되지 않은 데이터는 물리적 점유일 뿐이다. 당신의 소멸은 논리적으로 타당하다."', sceneImage: '/source/S1_02.png' },
-                    { speaker: '콩쥐', text: '"그 논리, 오늘 내가 박살 내줄게. 10분이면 이 썩은 서버를 뒤집어엎고도 남는 시간이야."', sceneImage: '/source/S1_02.png' }
+                    { speaker: '시스템 AI', text: '"알린다. 사용자 \'콩쥐\'의 무결성 검증이 실패되었다. 600초 후 가용 메모리 풀 확보를 위한 강제 소거가 시작된다."', charDelay: 75, waitVoice: true, sceneImage: 'source/S1_01.png' },
+                    { speaker: '콩쥐', text: '"가용 메모리 확보? 내 16년 치 기억 로그를 통째로 포맷하는 걸 참 우아하게도 말하는군."', charDelay: 75, waitVoice: true, sceneImage: 'source/S1_02.png' },
+                    { speaker: '시스템 AI', text: '"시스템에 기록되지 않은 데이터는 물리적 점유일 뿐이다. 당신의 소멸은 논리적으로 타당하다."', sceneImage: 'source/S1_02.png' },
+                    { speaker: '콩쥐', text: '"그 논리, 오늘 내가 박살 내줄게. 10분이면 이 썩은 서버를 뒤집어엎고도 남는 시간이야."', sceneImage: 'source/S1_02.png' }
                 ],
-                img: '/source/S1.png',
+                img: 'source/S1.png',
                 choices: [
                     { type: 'A', text: '방화벽 강제 우회', delta: 'SYNC+20/NOISE+10', s: 20, i: 0, n: 10, next: 'S2' },
                     { type: 'B', text: '신호 위장 잠입', delta: 'INTEG+20/NOISE-5', s: 0, i: 20, n: -5, next: 'S2' }
@@ -1016,7 +1018,7 @@
                     { speaker: '나노두꺼비', text: '"성질 급하긴. 내 깨진 하부 모듈을 수리해준다면 네 코어가 타버리기 전에 길을 열어주지. 서로의 손익이 맞지 않나?"' },
                     { speaker: '콩쥐', text: '"거래는 성립됐어. 하지만 딴생각하면 네 렌즈부터 뽑아버릴 줄 알아."' }
                 ],
-                img: '/source/S2.png',
+                img: 'source/S2.png',
                 choices: [
                     { type: 'A', text: '모듈 수리 협력', delta: 'INTEG+20', s: 0, i: 20, n: 0, action: () => state.helpedToad = true, next: 'S3' },
                     { type: 'B', text: '데이터 강제 탈취', delta: 'SYNC+20/NOISE+5', s: 20, i: 0, n: 5, action: () => state.helpedToad = false, next: 'S3' }
@@ -1031,7 +1033,7 @@
                     { speaker: '팥쥐', text: '"이건 효율의 문제입니다. 당신의 로그는 무의미한 잡음일 뿐이에요. 포맷까지 5초 남았습니다."' },
                     { speaker: '콩쥐', text: '"잡음이 모이면 비명이 된다는 걸 똑똑히 보여줄게. 나는 여기 살아있어, 이 금속 껍데기 안에서!"' }
                 ],
-                img: '/source/S3.png',
+                img: 'source/S3.png',
                 choices: [
                     { type: 'A', text: '관리자 뇌물 매수', delta: 'INTEG-20/NOISE-10', s: 0, i: -20, n: -10, next: 'S4' },
                     { type: 'B', text: '제어권 직접 해킹', delta: 'SYNC+15/NOISE+15', s: 15, i: 0, n: 15, next: 'S4' }
@@ -1046,7 +1048,7 @@
                     { speaker: '선녀', text: '"거래엔 대가가 따르는 법. 네 코어에 남은 마지막 \'진짜 기억\'을 내게 넘겨. 그럼 키를 주지. 텅 빈 깡통으로 살 자신은 있나?"' },
                     { speaker: '콩쥐', text: '"내 기억이 네 수집품이 되더라도, 기꺼이 내놓겠어."' }
                 ],
-                img: '/source/S4.png',
+                img: 'source/S4.png',
                 choices: [
                     { type: 'A', text: '기억 데이터 거래', delta: 'ADMIN_KEY=TRUE', s: 0, i: -10, n: 0, action: () => state.adminKey = true, next: 'S6' },
                     { type: 'B', text: '코어 구역 난입', delta: 'S5 진입', s: 0, i: 0, n: 10, next: 'S5' }
@@ -1061,7 +1063,7 @@
                     { speaker: '팥쥐', text: '"의지는 불확실성을 낳을 뿐이에요. 저는 질서를 수호합니다."' },
                     { speaker: '콩쥐', text: '"질서라는 이름의 감옥이겠지. 비켜, 내 로그는 내가 직접 완성해."' }
                 ],
-                img: '/source/S5.png',
+                img: 'source/S5.png',
                 choices: [
                     { type: 'A', text: '사슬 절단 성공', delta: 'KEY 찬탈 성공', s: 20, i: 0, n: 0, action: () => state.adminKey = true, next: 'S6' },
                     { type: 'B', text: '집행 시퀀스 오류', delta: '루프 발생', s: 0, i: 0, n: 0, next: 'RE_S3' }
@@ -1071,7 +1073,7 @@
                 id: 'LOOP', title: '시스템 복구', location: 'GLITCH SPACE',
                 narrative: '시야가 깨진 픽셀로 뒤덮이고 모든 소리가 기괴하게 늘어지는 저주파로 변한다. 콩쥐의 형체는 흐릿하게 무너져 내리고, 과거의 잔상들이 끝없는 데이터 루프 속에 갇혀 반복된다.',
                 dialogue: [{ speaker: '시스템', text: '"Critical Error. 사용자 \'콩쥐\'의 무결성 붕괴. 백업 지점에서 재구성을 시도하겠습니까? 주의: 반복된 복구는 영혼의 마모를 초래합니다."' }],
-                img: '/source/RE_S3.png',
+                img: 'source/RE_S3.png',
                 choices: [
                     { type: 'A', text: '백업 로그 로드', delta: 'S3 회귀', s: 0, i: 0, n: 10, next: 'S3' },
                     { type: 'B', text: '로그 포맷 수용', delta: '삭제 완료', s: 0, i: 0, n: 0, next: 'G_OVER' }
@@ -1086,7 +1088,7 @@
                     { speaker: '원님', text: '"이제 판결의 권한은 너에게 있다. 시스템을 리부트하여 순수한 \'무\'로 돌릴 것인가, 아니면 이 비참한 진실을 모두에게 전파할 것인가."' },
                     { speaker: '콩쥐', text: '"판결이라니, 끝까지 오만한 태도군. 이제 내가 네 시뮬레이션 밖으로 나갈 차례다."' }
                 ],
-                img: '/source/S6.png',
+                img: 'source/S6.png',
                 choices: [
                     { type: 'A', text: '시스템 전면 리부트', delta: '혁명가', s: 0, i: 0, n: 0, next: 'END_A', cond: () => state.adminKey },
                     { type: 'B', text: '진실 전파 선언', delta: '인도주의자', s: 0, i: 0, n: 0, next: 'END_B', cond: () => state.adminKey }
@@ -1096,21 +1098,23 @@
                 id: 'FIN', title: '혁명가', location: 'LOG_FINAL', 
                 narrative: '[SYSTEM LOG: 콩쥐라는 유령이 이곳을 다녀감]', 
                 dialogue: [{ speaker: '시스템 로그', text: '"콩쥐라는 유령이 이곳을 다녀감."' }],
-                img: '/source/END_A.png', 
-                choices: [{ type: 'R', text: '서버 재접속', delta: 'RESTART', action: () => location.reload(), next: 'S1' }] 
+                img: 'source/END_A.png',
+                video: 'source/Kongji_opens_eyes_cryogenic_capsule_202605131053.mp4',
+                choices: [{ type: 'R', text: '서버 재접속', delta: 'RESTART', action: () => location.reload(), next: 'S1' }]
             },
-            'END_B': { 
-                id: 'FIN', title: '인도주의자', location: 'DEMO_LOG', 
-                narrative: '이름 없던 존재들이 자신의 로그를 되찾고, 조작된 낙원의 장막이 걷힌다.', 
+            'END_B': {
+                id: 'FIN', title: '인도주의자', location: 'DEMO_LOG',
+                narrative: '이름 없던 존재들이 자신의 로그를 되찾고, 조작된 낙원의 장막이 걷힌다.',
                 dialogue: [{ speaker: '시스템 각성', text: '"이름 없던 존재들이 자신의 로그를 되찾고, 조작된 낙원의 장막이 걷힌다."' }],
-                img: '/source/END_B.png',
+                img: 'source/END_B.png',
+                video: 'source/Kongji_opens_eyes_cryogenic_capsule_202605131053.mp4',
                 choices: [{ type: 'R', text: '서버 재접속', delta: 'RESTART', action: () => location.reload(), next: 'S1' }] 
             },
             'G_OVER': { 
                 id: 'DIE', title: '포맷 완료', location: 'NULL', 
                 narrative: '[FORMAT COMPLETE: 당신은 애초에 존재하지 않았습니다]', 
                 dialogue: [{ speaker: '시스템 메시지', text: '"[FORMAT COMPLETE: 당신은 애초에 존재하지 않았습니다]"' }],
-                img: '/source/G_OVER.png',
+                img: 'source/G_OVER.png',
                 choices: [{ type: 'R', text: '서버 재접속', delta: 'RETRY', action: () => location.reload(), next: 'S1' }] 
             }
         };
@@ -1325,14 +1329,27 @@
             document.getElementById('ui-admin-text').innerText = `ADMIN_KEY: ${state.adminKey ? 'TRUE' : 'FALSE'}`;
 
             const img = document.getElementById('scene-image');
-            img.style.animation = 'none';
-            img.offsetHeight;
-            img.src = data.img;
-            img.style.animation = 'scene-flash-in 1.6s ease forwards';
-            img.addEventListener('animationend', function onFlashDone() {
-                img.style.animation = 'ken-burns 24s ease-in-out infinite';
-                img.removeEventListener('animationend', onFlashDone);
-            });
+            const vid = document.getElementById('scene-video');
+            if (data.video) {
+                img.style.display = 'none';
+                vid.style.display = 'block';
+                vid.src = data.video;
+                vid.muted = false;
+                vid.play().catch(() => { vid.muted = true; vid.play(); });
+            } else {
+                vid.pause();
+                vid.src = '';
+                vid.style.display = 'none';
+                img.style.display = 'block';
+                img.style.animation = 'none';
+                img.offsetHeight;
+                img.src = data.img;
+                img.style.animation = 'scene-flash-in 1.6s ease forwards';
+                img.addEventListener('animationend', function onFlashDone() {
+                    img.style.animation = 'ken-burns 24s ease-in-out infinite';
+                    img.removeEventListener('animationend', onFlashDone);
+                });
+            }
             document.getElementById('ui-scene-info').innerText = `${data.id} - ${data.title}`;
             document.getElementById('ui-location').innerText = data.location;
             document.getElementById('ui-narrative').innerText = data.narrative;
